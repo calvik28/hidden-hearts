@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+.env
+.env.local
+.vercel
+public/apple-touch-icon.png
+public/favicon-32.png
+public/icon-192.png
+public/icon-512.png
