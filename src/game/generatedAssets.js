@@ -3,7 +3,7 @@ const generatedBase = "/assets/generated";
 export const generatedAssets = {
   ui: {
     titleEntranceBackground: `${generatedBase}/ui/title-entrance-background.png`,
-    vaultDoorTexture: `${generatedBase}/textures/vault-door-runes.webp`,
+    vaultDoorTexture: `${generatedBase}/textures/vault-door-runes.png`,
     uiFrameTexture: `${generatedBase}/ui/ui-panel-frame.png`,
     finaleIllustration: `${generatedBase}/chapters/chapter-06-coming-soon.webp`,
   },

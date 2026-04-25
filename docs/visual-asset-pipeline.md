@@ -14,7 +14,7 @@ public/assets/generated/textures/
 public/assets/generated/icons/
 ```
 
-Use lowercase, hyphenated filenames that include the chapter number or purpose, such as `chapter-01-smoke-sky.webp`, `vault-door-runes.webp`, or `portal-heart-ring.png`.
+Use lowercase, hyphenated filenames that include the chapter number or purpose, such as `chapter-01-smoke-sky.webp`, `vault-door-runes.png`, or `portal-heart-ring.png`.
 
 ## High-Value Assets
 

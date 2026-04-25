@@ -7,7 +7,7 @@ Use these prompts to create static image assets for Hidden Hearts RPG. Save fini
 | Priority | Asset | Save Path | Format | Use |
 | --- | --- | --- | --- | --- |
 | 1 | Title entrance background | `public/assets/generated/ui/title-entrance-background.png` | PNG, 16:9 | Vault entrance atmosphere |
-| 1 | Vault door texture | `public/assets/generated/textures/vault-door-runes.webp` | WebP, square | Vault door surface overlay |
+| 1 | Vault door texture | `public/assets/generated/textures/vault-door-runes.png` | PNG, 1536x1024 | Vault door surface overlay |
 | 2 | Chapter 1 background | `public/assets/generated/chapters/chapter-01-smoke-and-secrets.webp` | WebP, 16:9 | Chapter UI/scene mood |
 | 2 | Chapter 1 sky panel | `public/assets/generated/chapters/chapter-01-smoke-sky-panel.webp` | WebP, 16:9 | Three.js distant sky panel |
 | 2 | Chapter 2 background | `public/assets/generated/chapters/chapter-02-shift-at-the-vault.webp` | WebP, 16:9 | Chapter UI/scene mood |
@@ -47,11 +47,8 @@ Output: 16:9 PNG background.
 ### Vault Door Texture
 
 ```text
-Create a square fantasy vault door texture for a browser RPG.
-Subject: front-facing circular metal vault door, dark steel, aged brass, concentric locking rings, tiny etched runes, hidden-heart symbols, subtle wing-feather grooves, cyan/gold/rose magical glints.
-Requirements: no characters, no text, no logo, no watermark, central lock area clearly defined, surface detail readable when cropped into a circle.
-Style: polished game texture, detailed but not noisy, suitable as a CSS overlay on a procedural vault door.
-Output: 2048x2048 WebP.
+Create a seamless or near-seamless fantasy vault door texture for Hidden Hearts RPG. The texture should show ancient dark metal, carved magical runes, subtle glowing heart-shaped motifs, worn stone-and-metal detail, and warm violet-gold magical light in the grooves. It should feel mysterious, protective, and emotionally significant, not horror. No text, no letters, no logos, no readable symbols. The image should work as a stylized game texture that can be applied to a vault-door surface or used as a decorative overlay.
+Output: 1536x1024 PNG.
 ```
 
 ### Chapter 1 Background
