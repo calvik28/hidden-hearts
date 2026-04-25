@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import HiddenHeartsScene from "./game/HiddenHeartsScene.jsx";
+import { generatedAssets, getLevelGeneratedAssets } from "./game/generatedAssets.js";
 import { ao3Links, finale, levels, vaultQuestions } from "./game/levels.js";
 
 const STORAGE_KEY = "hidden-hearts-progress";
@@ -84,6 +85,37 @@ export default function App() {
 
   const level = levels[levelIndex];
   const completedSet = useMemo(() => new Set(progress.completed), [progress]);
+  const uiAssetStyle = useMemo(
+    () => ({
+      "--ui-frame-image": `url("${generatedAssets.ui.uiFrameTexture}")`,
+    }),
+    [],
+  );
+  const chapterStyle = useMemo(
+    () => ({
+      ...uiAssetStyle,
+      "--chapter-accent": level.accent,
+      "--chapter-secondary": level.visual?.secondary ?? "#f8c75c",
+      "--chapter-mist": level.visual?.mist ?? level.accent,
+      "--chapter-bg-image": `url("${getLevelGeneratedAssets(level).background}")`,
+    }),
+    [level, uiAssetStyle],
+  );
+  const vaultAssetStyle = useMemo(
+    () => ({
+      ...uiAssetStyle,
+      "--vault-bg-image": `url("${generatedAssets.ui.titleEntranceBackground}")`,
+      "--vault-door-image": `url("${generatedAssets.ui.vaultDoorTexture}")`,
+    }),
+    [uiAssetStyle],
+  );
+  const finaleAssetStyle = useMemo(
+    () => ({
+      ...uiAssetStyle,
+      "--finale-bg-image": `url("${generatedAssets.ui.finaleIllustration}")`,
+    }),
+    [uiAssetStyle],
+  );
 
   useEffect(() => {
     try {
@@ -223,12 +255,19 @@ export default function App() {
   };
 
   if (!vaultOpen) {
-    return <VaultEntrance onUnlock={unlockVault} shareGame={shareGame} shareStatus={shareStatus} />;
+    return (
+      <VaultEntrance
+        assetStyle={vaultAssetStyle}
+        onUnlock={unlockVault}
+        shareGame={shareGame}
+        shareStatus={shareStatus}
+      />
+    );
   }
 
   if (showFinale) {
     return (
-      <main className="app-shell finale-shell">
+      <main className="app-shell finale-shell" style={finaleAssetStyle}>
         <FinaleBackdrop />
         <section className="finale-content" aria-labelledby="finale-title">
           <p className="kicker">{finale.chapter}</p>
@@ -267,7 +306,7 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" style={chapterStyle}>
       <HiddenHeartsScene
         key={`${level.id}-${runKey}`}
         level={level}
@@ -421,7 +460,7 @@ export default function App() {
   );
 }
 
-function VaultEntrance({ onUnlock, shareGame, shareStatus }) {
+function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
   const [step, setStep] = useState(0);
   const [reinforced, setReinforced] = useState(false);
   const [answered, setAnswered] = useState([]);
@@ -452,7 +491,7 @@ function VaultEntrance({ onUnlock, shareGame, shareStatus }) {
   };
 
   return (
-    <main className={`vault-shell ${reinforced ? "reinforced" : ""}`}>
+    <main className={`vault-shell ${reinforced ? "reinforced" : ""}`} style={assetStyle}>
       <section className="vault-stage" aria-labelledby="vault-title">
         <div className="vault-door" aria-hidden="true">
           <div className="vault-bolts">

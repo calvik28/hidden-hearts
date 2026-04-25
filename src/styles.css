@@ -15,6 +15,9 @@
   --rose: #ff3d6e;
   --cyan: #68e1fd;
   --paper: #f7f2e8;
+  --chapter-accent: #ff715b;
+  --chapter-secondary: #f8c75c;
+  --chapter-mist: #ffad8d;
 }
 
 * {
@@ -50,13 +53,32 @@ button {
   height: 100%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 16% 12%, rgba(104, 225, 253, 0.18), transparent 32%),
-    linear-gradient(160deg, #070b18 0%, #10101f 48%, #210c18 100%);
+    radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--chapter-accent) 24%, transparent), transparent 32%),
+    radial-gradient(circle at 78% 20%, color-mix(in srgb, var(--chapter-secondary) 14%, transparent), transparent 28%),
+    linear-gradient(160deg, #050711 0%, #10101f 48%, #210c18 100%);
+}
+
+.app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--chapter-bg-image, none);
+  background-position: center;
+  background-size: cover;
+  opacity: 0.2;
+  mix-blend-mode: screen;
 }
 
 .scene-host {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-host canvas {
+  display: block;
   width: 100%;
   height: 100%;
 }
@@ -90,11 +112,12 @@ button {
 
 .kicker {
   margin: 0 0 6px;
-  color: var(--gold);
+  color: var(--chapter-secondary);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--chapter-secondary) 34%, transparent);
 }
 
 .chapter-nav,
@@ -118,11 +141,15 @@ button {
 .chapter-dot {
   width: 36px;
   height: 36px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--chapter-accent) 30%, var(--line));
   border-radius: 50%;
   color: var(--paper);
-  background: rgba(6, 10, 20, 0.55);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(6, 10, 20, 0.62);
+  box-shadow:
+    inset 0 0 16px rgba(255, 255, 255, 0.04),
+    0 10px 30px rgba(0, 0, 0, 0.24);
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -141,8 +168,9 @@ button {
 }
 
 .chapter-dot.active {
-  background: linear-gradient(135deg, rgba(255, 61, 110, 0.86), rgba(248, 199, 92, 0.84));
+  background: linear-gradient(135deg, var(--chapter-accent), var(--chapter-secondary));
   border-color: rgba(255, 255, 255, 0.64);
+  color: #07101a;
 }
 
 .chapter-dot.complete {
@@ -158,11 +186,43 @@ button {
 .hud-panel {
   position: absolute;
   z-index: 4;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--chapter-accent) 28%, var(--line));
   border-radius: 8px;
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 42%),
+    var(--panel);
   backdrop-filter: blur(18px);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 0 36px color-mix(in srgb, var(--chapter-accent) 15%, transparent),
+    0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.hud-panel::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--chapter-secondary), transparent);
+  opacity: 0.62;
+}
+
+.hud-panel::after,
+.briefing::after,
+.finale-content::after,
+.vault-console::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: var(--ui-frame-image, none);
+  background-position: center;
+  background-size: 100% 100%;
+  opacity: 0.24;
+  mix-blend-mode: screen;
 }
 
 .mission-panel {
@@ -216,7 +276,8 @@ button {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--rose), var(--gold), var(--mint));
+  background: linear-gradient(90deg, var(--rose), var(--chapter-secondary), var(--chapter-accent), var(--mint));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--chapter-accent) 38%, transparent);
   transition: width 240ms ease;
 }
 
@@ -245,6 +306,13 @@ button {
   gap: 10px;
   color: var(--paper);
   line-height: 1.35;
+}
+
+.objective-heading svg,
+.stat-row svg,
+.objective-panel li svg {
+  color: var(--chapter-secondary);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--chapter-secondary) 34%, transparent));
 }
 
 .objective-panel ul {
@@ -302,12 +370,16 @@ button {
   justify-content: center;
   gap: 8px;
   min-height: 40px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--chapter-accent) 24%, var(--line));
   border-radius: 8px;
   color: var(--paper);
-  background: rgba(8, 13, 26, 0.76);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(8, 13, 26, 0.78);
   text-decoration: none;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 30px rgba(0, 0, 0, 0.26);
   transition:
     transform 180ms ease,
     background 180ms ease,
@@ -327,7 +399,10 @@ button {
 .command.primary {
   color: #0c111a;
   border-color: transparent;
-  background: linear-gradient(135deg, var(--gold), var(--mint));
+  background: linear-gradient(135deg, var(--chapter-secondary), var(--chapter-accent), var(--mint));
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--chapter-accent) 24%, transparent),
+    0 14px 34px rgba(0, 0, 0, 0.32);
 }
 
 .overlay {
@@ -338,18 +413,25 @@ button {
   place-items: center;
   padding: 18px;
   background:
-    linear-gradient(180deg, rgba(7, 11, 24, 0.22), rgba(7, 11, 24, 0.72)),
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--chapter-accent) 13%, transparent), transparent 32%),
+    linear-gradient(180deg, rgba(7, 11, 24, 0.22), rgba(7, 11, 24, 0.74)),
     rgba(7, 11, 24, 0.22);
   backdrop-filter: blur(4px);
 }
 
 .briefing {
+  position: relative;
   width: min(560px, 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid color-mix(in srgb, var(--chapter-accent) 32%, rgba(255, 255, 255, 0.18));
   border-radius: 8px;
   padding: 28px;
-  background: var(--panel-strong);
-  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--chapter-accent) 9%, transparent), transparent 44%),
+    var(--panel-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 0 46px color-mix(in srgb, var(--chapter-accent) 17%, transparent),
+    0 26px 90px rgba(0, 0, 0, 0.48);
 }
 
 .briefing h2 {
@@ -384,8 +466,13 @@ button {
 
 .mobile-controls .action-button {
   width: 52px;
-  border-color: rgba(248, 199, 92, 0.48);
-  background: rgba(248, 199, 92, 0.2);
+  border-color: color-mix(in srgb, var(--chapter-secondary) 58%, transparent);
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--chapter-secondary) 26%, transparent), transparent 70%),
+    rgba(248, 199, 92, 0.16);
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--chapter-secondary) 22%, transparent),
+    0 12px 30px rgba(0, 0, 0, 0.26);
 }
 
 .toast {
@@ -394,11 +481,14 @@ button {
   bottom: 92px;
   z-index: 12;
   transform: translateX(-50%);
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--chapter-accent) 32%, var(--line));
   border-radius: 8px;
   padding: 10px 14px;
   color: var(--paper);
-  background: var(--panel-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    var(--panel-strong);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--chapter-accent) 18%, transparent);
 }
 
 .finale-shell {
@@ -412,8 +502,21 @@ button {
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 18%, rgba(248, 199, 92, 0.18), transparent 26%),
-    linear-gradient(160deg, #070b18 0%, #151729 42%, #250d1b 100%);
+    radial-gradient(circle at 50% 20%, rgba(248, 199, 92, 0.22), transparent 24%),
+    radial-gradient(circle at 22% 18%, rgba(104, 225, 253, 0.16), transparent 26%),
+    radial-gradient(circle at 80% 30%, rgba(255, 61, 110, 0.14), transparent 28%),
+    linear-gradient(160deg, #050711 0%, #151729 42%, #250d1b 100%);
+}
+
+.finale-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--finale-bg-image, none);
+  background-position: center;
+  background-size: cover;
+  opacity: 0.56;
+  mix-blend-mode: screen;
 }
 
 .gate {
@@ -424,6 +527,9 @@ button {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   animation: gate-spin 18s linear infinite;
+  box-shadow:
+    inset 0 0 28px rgba(248, 199, 92, 0.14),
+    0 0 42px rgba(248, 199, 92, 0.12);
 }
 
 .gate-one {
@@ -464,9 +570,14 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   padding: 36px;
-  background: rgba(8, 13, 26, 0.78);
+  background:
+    linear-gradient(135deg, rgba(248, 199, 92, 0.09), transparent 36%),
+    rgba(8, 13, 26, 0.8);
   backdrop-filter: blur(18px);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 0 54px rgba(248, 199, 92, 0.12),
+    0 28px 90px rgba(0, 0, 0, 0.42);
 }
 
 .finale-content h1 {
@@ -503,15 +614,32 @@ button {
   overflow: hidden;
   color: var(--paper);
   background:
+    linear-gradient(90deg, rgba(5, 7, 17, 0.26) 0%, rgba(5, 7, 17, 0.14) 44%, rgba(5, 7, 17, 0.78) 100%),
+    var(--vault-bg-image, none),
     linear-gradient(90deg, rgba(104, 225, 253, 0.12) 1px, transparent 1px),
     linear-gradient(rgba(248, 199, 92, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 36% 46%, rgba(248, 199, 92, 0.16), transparent 22%),
     radial-gradient(circle at 70% 20%, rgba(255, 61, 110, 0.18), transparent 30%),
+    radial-gradient(circle at 12% 24%, rgba(104, 225, 253, 0.16), transparent 26%),
     linear-gradient(145deg, #050711 0%, #121527 52%, #290f18 100%);
   background-size:
+    auto,
+    cover,
     42px 42px,
     42px 42px,
     auto,
+    auto,
+    auto,
     auto;
+  background-position:
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    center;
 }
 
 .vault-stage {
@@ -531,10 +659,20 @@ button {
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.14) 0 10%, transparent 11%),
+    radial-gradient(circle at 42% 38%, rgba(248, 199, 92, 0.2), transparent 16%),
+    var(--vault-door-image, none),
     conic-gradient(from 12deg, #7f8ea0, #1b2431, #c8d2db, #2d3847, #6f7b8c, #111827, #a8b4c1, #28313f, #7f8ea0);
+  background-position: center;
+  background-size:
+    auto,
+    auto,
+    cover,
+    auto;
+  background-blend-mode: normal, screen, overlay, normal;
   box-shadow:
     inset 0 0 34px rgba(255, 255, 255, 0.18),
     inset 0 0 110px rgba(0, 0, 0, 0.74),
+    0 0 48px rgba(248, 199, 92, 0.12),
     0 42px 110px rgba(0, 0, 0, 0.58);
   transform: perspective(1200px) rotateY(-9deg) rotateX(3deg);
   transition:
@@ -708,11 +846,17 @@ button {
 }
 
 .vault-console {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+  border: 1px solid rgba(248, 199, 92, 0.22);
   border-radius: 8px;
   padding: 28px;
-  background: rgba(8, 13, 26, 0.78);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.44);
+  background:
+    linear-gradient(135deg, rgba(104, 225, 253, 0.08), transparent 34%),
+    rgba(8, 13, 26, 0.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 38px rgba(104, 225, 253, 0.1),
+    0 24px 80px rgba(0, 0, 0, 0.44);
   backdrop-filter: blur(18px);
 }
 
@@ -748,6 +892,8 @@ button {
 .vault-progress span.current {
   border-color: rgba(248, 199, 92, 0.7);
   color: var(--gold);
+  background: rgba(248, 199, 92, 0.1);
+  box-shadow: 0 0 16px rgba(248, 199, 92, 0.16);
 }
 
 .vault-progress span.lit {
@@ -782,8 +928,11 @@ button {
   border-radius: 8px;
   padding: 10px;
   color: var(--paper);
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(255, 255, 255, 0.075);
   font-weight: 850;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   transition:
     border-color 180ms ease,
     background 180ms ease,
