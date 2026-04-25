@@ -1,11 +1,11 @@
 {
   "name": "Hidden Hearts RPG",
   "short_name": "Hidden Hearts",
-  "description": "A chapter-by-chapter 3D RPG adaptation of Theo_innit's Hidden Hearts.",
+  "description": "A 2D retro story RPG prototype based on Theo_innit's Hidden Hearts.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#070b18",
-  "theme_color": "#070b18",
+  "background_color": "#090c16",
+  "theme_color": "#090c16",
   "icons": [
     {
       "src": "/icon-192.png",

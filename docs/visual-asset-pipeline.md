@@ -1,5 +1,13 @@
 # Hidden Hearts RPG Visual Asset Pipeline
 
+Status: paused until further notice.
+
+This is a legacy visual planning document. It is not a story source of truth, and it is not the final 2D story RPG image pipeline. Do not treat old prompt language, placeholder enemy labels, or asset filenames as canon. Current story work should be checked against the AO3 text and Leah's future character bible before being added to gameplay or character data.
+
+Image generation will be part of the future 2D story RPG asset pipeline, including chapter backgrounds, portraits, UI, and story-specific assets. That pipeline is paused until further notice.
+
+Temporary production visuals should use CSS/procedural blocky Minecraft-style placeholders until final image generation resumes.
+
 This project is a fully static Vite app. Generated art must be saved into the repository and referenced from local static paths. Do not call image APIs at runtime and do not add a backend for asset delivery.
 
 The concrete first-pass manifest and ready-to-use prompts live in `docs/generated-asset-prompts.md`.
@@ -22,9 +30,9 @@ Use lowercase, hyphenated filenames that include the chapter number or purpose, 
 - Vault door texture: metal, runes, lock grooves, hidden-heart motifs, and subtle magical scratches.
 - Chapter-specific skybox/background panels: one per playable chapter, matching each level mood.
 - UI frame texture: subtle border/rune overlays for HUD panels, briefing cards, and completion dialogs.
-- Ally/emblem icons: small warm symbols for Jimmy, Gem, Mumbo, Pearl, Solo, Scar, and Team Signal.
-- Enemy sigil icons: readable threat marks for Tekbox, Ethical, Moonlight, Lucid, Tithonus, Doubt, Fear, and Cyclone.
-- Portal texture: transparent PNG/WebP ring, inner vortex, or glyph overlay for the chapter gate.
+- Ally/emblem icons: small warm symbols for source-confirmed characters such as Jimmy, Gem, Mumbo, Pearl, Lizzie, Solo, and Scar.
+- Enemy sigil icons: readable threat marks for source-confirmed villains such as Tekbox, Ethical, Moonlight, Lucid, Tithonus, Cyclone, Manic, and Zero.
+- Portal texture: transparent PNG/WebP ring, inner vortex, or glyph overlay for legacy level-completion references or future story transitions.
 - Pickup icons: small magical item art for chapter collectibles.
 - Finale illustration: Chapter 6 Coming Soon art with a cliff-edge, portal, or unresolved-heart composition.
 
@@ -72,7 +80,7 @@ Output: square PNG.
 
 ```text
 Create a transparent magical portal ring for Hidden Hearts RPG.
-Motifs: heart-shaped glyphs, rotating chapter gate, wing-like arcs, [chapter accent color] glow.
+Motifs: heart-shaped glyphs, level-completion ring, wing-like arcs, [chapter accent color] glow.
 Style: luminous game VFX texture, no text, transparent background.
 Output: square PNG/WebP with alpha.
 ```

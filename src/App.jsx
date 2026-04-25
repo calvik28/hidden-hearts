@@ -1,28 +1,34 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
   BookOpen,
-  Heart,
+  Check,
+  ChevronLeft,
+  ChevronRight,
   Home,
+  Lightbulb,
   Lock,
   LockKeyhole,
   MessageCircle,
   RotateCcw,
-  Share2,
+  Send,
   Shield,
   Sparkles,
-  Swords,
-  Zap,
+  Star,
+  UserRound,
 } from "lucide-react";
-import HiddenHeartsScene from "./game/HiddenHeartsScene.jsx";
-import { generatedAssets, getLevelGeneratedAssets } from "./game/generatedAssets.js";
-import { ao3Links, finale, levels, vaultQuestions } from "./game/levels.js";
+import { getCharacterById } from "./game/characters.js";
+import { generatedAssets } from "./game/generatedAssets.js";
+import { ao3Links, vaultQuestions } from "./game/levels.js";
+import {
+  chapterOneStory,
+  createStoryProgress,
+  storyStats,
+} from "./game/storyScenes.js";
 
 const STORAGE_KEY = "hidden-hearts-progress";
 const VAULT_KEY = "hidden-hearts-vault-open";
+const FEEDBACK_KEY = "hidden-hearts-feedback";
+const REPO_ISSUE_URL = "https://github.com/calvik28/hidden-hearts/issues/new";
 
 function createProgress() {
   return {
@@ -33,14 +39,29 @@ function createProgress() {
   };
 }
 
-function readProgress() {
+function safeReadJson(key, fallback) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (parsed && Array.isArray(parsed.completed)) {
-      return { ...createProgress(), ...parsed };
-    }
+    const value = localStorage.getItem(key);
+    if (!value) return fallback;
+    return JSON.parse(value);
   } catch {
-    return createProgress();
+    return fallback;
+  }
+}
+
+function safeWriteJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function readProgress() {
+  const parsed = safeReadJson(STORAGE_KEY, null);
+  if (parsed && Array.isArray(parsed.completed)) {
+    return { ...createProgress(), ...parsed };
   }
   return createProgress();
 }
@@ -61,68 +82,76 @@ function writeVaultOpen() {
   }
 }
 
-function missionState(level) {
-  return {
-    hp: 100,
-    collected: [],
-    defeated: [],
-    portalReady: false,
-    complete: false,
-    log: [`${level.chapter}: ${level.title}`],
-  };
+function shuffleVaultOptions(question) {
+  const options = [...question.options];
+  for (let index = options.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [options[index], options[swapIndex]] = [options[swapIndex], options[index]];
+  }
+  if (options.length > 1 && options[0] === question.answer) {
+    const swapIndex = 1 + Math.floor(Math.random() * (options.length - 1));
+    [options[0], options[swapIndex]] = [options[swapIndex], options[0]];
+  }
+  return options;
+}
+
+function createVaultOptionOrder() {
+  return vaultQuestions.map((question) => ({
+    dial: question.dial,
+    options: shuffleVaultOptions(question),
+  }));
+}
+
+function readFeedback() {
+  const parsed = safeReadJson(FEEDBACK_KEY, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function applyChoiceStats(currentStats, choiceStats = {}) {
+  const next = { ...currentStats };
+  for (const [key, value] of Object.entries(choiceStats)) {
+    next[key] = (next[key] ?? 0) + value;
+  }
+  return next;
+}
+
+function buildFeedbackBody(feedback) {
+  return [
+    "## In-game suggestion",
+    "",
+    `Scene: ${feedback.sceneTitle}`,
+    `Type: ${feedback.type}`,
+    `From: ${feedback.name || "Player"}`,
+    "",
+    "## Note",
+    feedback.message,
+    "",
+    "## Prototype state",
+    `Choice path: ${feedback.choicePath || "No choices recorded yet"}`,
+    `Stats: ${feedback.statsSummary}`,
+  ].join("\n");
 }
 
 export default function App() {
   const [progress, setProgress] = useState(readProgress);
   const [vaultOpen, setVaultOpen] = useState(readVaultOpen);
-  const [levelIndex, setLevelIndex] = useState(0);
-  const [runKey, setRunKey] = useState(0);
-  const [showFinale, setShowFinale] = useState(false);
-  const [briefingOpen, setBriefingOpen] = useState(true);
-  const [mission, setMission] = useState(() => missionState(levels[0]));
-  const [controls, setControls] = useState({});
+  const [story, setStory] = useState(createStoryProgress);
+  const [pendingResult, setPendingResult] = useState(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
 
-  const level = levels[levelIndex];
-  const completedSet = useMemo(() => new Set(progress.completed), [progress]);
-  const uiAssetStyle = useMemo(
+  const scene = chapterOneStory.scenes[story.sceneIndex] ?? chapterOneStory.scenes[0];
+  const completedChapter = progress.completed.includes(chapterOneStory.id);
+  const shellStyle = useMemo(
     () => ({
-      "--ui-frame-image": `url("${generatedAssets.ui.uiFrameTexture}")`,
-    }),
-    [],
-  );
-  const chapterStyle = useMemo(
-    () => ({
-      ...uiAssetStyle,
-      "--chapter-accent": level.accent,
-      "--chapter-secondary": level.visual?.secondary ?? "#f8c75c",
-      "--chapter-mist": level.visual?.mist ?? level.accent,
-      "--chapter-bg-image": `url("${getLevelGeneratedAssets(level).background}")`,
-    }),
-    [level, uiAssetStyle],
-  );
-  const vaultAssetStyle = useMemo(
-    () => ({
-      ...uiAssetStyle,
       "--vault-bg-image": `url("${generatedAssets.ui.titleEntranceBackground}")`,
       "--vault-door-image": `url("${generatedAssets.ui.vaultDoorTexture}")`,
     }),
-    [uiAssetStyle],
-  );
-  const finaleAssetStyle = useMemo(
-    () => ({
-      ...uiAssetStyle,
-      "--finale-bg-image": `url("${generatedAssets.ui.finaleIllustration}")`,
-    }),
-    [uiAssetStyle],
+    [],
   );
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    } catch {
-      return;
-    }
+    safeWriteJson(STORAGE_KEY, progress);
   }, [progress]);
 
   const unlockVault = () => {
@@ -130,114 +159,80 @@ export default function App() {
     setVaultOpen(true);
   };
 
-  const resetMission = useCallback((nextIndex) => {
-    setLevelIndex(nextIndex);
-    setRunKey((value) => value + 1);
-    setShowFinale(false);
-    setBriefingOpen(true);
-    setMission(missionState(levels[nextIndex]));
-    setControls({});
-  }, []);
-
-  const patchMission = useCallback((updater) => {
-    setMission((current) => {
-      const next = typeof updater === "function" ? updater(current) : updater;
-      return next;
-    });
-  }, []);
-
-  const markComplete = useCallback(() => {
-    setMission((current) => {
-      if (current.complete) return current;
-      return {
-        ...current,
-        complete: true,
-        log: [level.completion, ...current.log].slice(0, 4),
-      };
-    });
-    setProgress((current) => {
-      const completed = new Set(current.completed);
-      completed.add(level.id);
-      return {
-        ...current,
-        completed: [...completed].sort((a, b) => a - b),
-        highestChapter: Math.max(current.highestChapter, level.id + 1),
-        hearts: current.hearts + 1,
-        courage: current.courage + level.id * 12,
-      };
-    });
-  }, [level]);
-
-  const handleCollect = useCallback((label) => {
-    patchMission((current) => {
-      if (current.collected.includes(label)) return current;
-      return {
-        ...current,
-        collected: [...current.collected, label],
-        log: [`Recovered ${label}.`, ...current.log].slice(0, 4),
-      };
-    });
-  }, [patchMission]);
-
-  const handleDefeat = useCallback((name) => {
-    patchMission((current) => {
-      if (current.defeated.includes(name)) return current;
-      return {
-        ...current,
-        defeated: [...current.defeated, name],
-        log: [`${name} retreated.`, ...current.log].slice(0, 4),
-      };
-    });
-  }, [patchMission]);
-
-  const handleDamage = useCallback((amount) => {
-    patchMission((current) => ({
+  const chooseOption = (choice) => {
+    if (pendingResult || story.complete) return;
+    setStory((current) => ({
       ...current,
-      hp: Math.max(12, current.hp - amount),
-      log:
-        current.hp - amount <= 18
-          ? ["Hold steady. The team is still with you.", ...current.log].slice(0, 4)
-          : current.log,
+      stats: applyChoiceStats(current.stats, choice.stats),
+      choices: [
+        ...current.choices,
+        {
+          sceneId: scene.id,
+          sceneTitle: scene.title,
+          choiceId: choice.id,
+          label: choice.label,
+        },
+      ],
     }));
-  }, [patchMission]);
+    setPendingResult({
+      sceneTitle: scene.title,
+      label: choice.label,
+      result: choice.result,
+      stats: choice.stats ?? {},
+    });
+  };
 
-  const handleReady = useCallback(() => {
-    patchMission((current) => ({
-      ...current,
-      portalReady: true,
-      log: ["The chapter gate is open.", ...current.log].slice(0, 4),
-    }));
-  }, [patchMission]);
-
-  const continueChapter = () => {
-    if (level.finalLevel || levelIndex === levels.length - 1) {
-      setShowFinale(true);
-      setBriefingOpen(false);
+  const continueStory = () => {
+    if (story.sceneIndex >= chapterOneStory.scenes.length - 1) {
+      setPendingResult(null);
+      setStory((current) => ({ ...current, complete: true }));
+      setProgress((current) => {
+        const completed = new Set(current.completed);
+        const wasComplete = completed.has(chapterOneStory.id);
+        completed.add(chapterOneStory.id);
+        return {
+          ...current,
+          completed: [...completed].sort((a, b) => a - b),
+          highestChapter: Math.max(current.highestChapter, 2),
+          hearts: wasComplete ? current.hearts : current.hearts + 1,
+          courage: wasComplete ? current.courage : current.courage + 12,
+        };
+      });
       return;
     }
-    resetMission(levelIndex + 1);
+    setPendingResult(null);
+    setStory((current) => ({
+      ...current,
+      sceneIndex: current.sceneIndex + 1,
+    }));
   };
 
-  const replay = () => {
-    resetMission(levelIndex);
+  const previousScene = () => {
+    if (pendingResult || story.sceneIndex === 0 || story.complete) return;
+    setStory((current) => ({
+      ...current,
+      sceneIndex: Math.max(0, current.sceneIndex - 1),
+    }));
   };
 
-  const returnToStart = () => {
-    resetMission(0);
+  const resetStory = () => {
+    setStory(createStoryProgress());
+    setPendingResult(null);
   };
 
-  const selectLevel = (index) => {
-    resetMission(index);
-  };
-
-  const setControl = (name, value) => {
-    setControls((current) => ({ ...current, [name]: value }));
+  const returnToVault = () => {
+    setVaultOpen(false);
+    try {
+      localStorage.removeItem(VAULT_KEY);
+    } catch {
+      return;
+    }
   };
 
   const shareGame = async () => {
     const payload = {
       title: "Hidden Hearts RPG",
-      text: "I played Hidden Hearts, a 3D chapter RPG based on Theo_innit's fanfic.",
+      text: "I played the Hidden Hearts 2D story RPG prototype.",
       url: window.location.href,
     };
     try {
@@ -257,7 +252,7 @@ export default function App() {
   if (!vaultOpen) {
     return (
       <VaultEntrance
-        assetStyle={vaultAssetStyle}
+        assetStyle={shellStyle}
         onUnlock={unlockVault}
         shareGame={shareGame}
         shareStatus={shareStatus}
@@ -265,198 +260,372 @@ export default function App() {
     );
   }
 
-  if (showFinale) {
-    return (
-      <main className="app-shell finale-shell" style={finaleAssetStyle}>
-        <FinaleBackdrop />
-        <section className="finale-content" aria-labelledby="finale-title">
-          <p className="kicker">{finale.chapter}</p>
-          <h1 id="finale-title">{finale.title}</h1>
-          <p className="finale-lede">
-            Thank you for your heroic efforts. You carried the team through smoke,
-            fear, healing, trust, and the cliff edge of the latest chapter.
-          </p>
-          <p>
-            The next chapter is coming soon. In the meantime, read Leah's fanfic
-            as Theo_innit on AO3 and leave a comment about what you enjoyed most
-            in Hidden Hearts. Come back soon to play the next chapter in the
-            series.
-          </p>
-          <div className="finale-actions">
-            <a className="command primary" href={ao3Links.firstChapter} target="_blank" rel="noreferrer">
-              <BookOpen size={18} />
-              Read Fanfic
-            </a>
-            <a className="command" href={ao3Links.latestComments} target="_blank" rel="noreferrer">
-              <MessageCircle size={18} />
-              Leave Comment
-            </a>
-            <button className="command" type="button" onClick={shareGame}>
-              <Share2 size={18} />
-              Share
-            </button>
-            <button className="icon-command" type="button" onClick={returnToStart} aria-label="Replay from chapter one" title="Replay from chapter one">
-              <RotateCcw size={20} />
-            </button>
-          </div>
-          {shareStatus && <p className="share-note">{shareStatus}</p>}
-        </section>
-      </main>
-    );
-  }
-
   return (
-    <main className="app-shell" style={chapterStyle}>
-      <HiddenHeartsScene
-        key={`${level.id}-${runKey}`}
-        level={level}
-        controls={controls}
-        disabled={briefingOpen || mission.complete}
-        onCollect={handleCollect}
-        onDefeat={handleDefeat}
-        onDamage={handleDamage}
-        onReadyForPortal={handleReady}
-        onComplete={markComplete}
-      />
-
-      <header className="topbar">
+    <main className="story-shell" style={shellStyle}>
+      <StoryBackdrop />
+      <header className="story-topbar">
         <div>
-          <p className="kicker">Theo_innit presents</p>
+          <p className="kicker">Production Prototype</p>
           <h1>Hidden Hearts</h1>
         </div>
-        <nav className="chapter-nav" aria-label="Chapter levels">
-          {levels.map((chapterLevel, index) => (
-            <button
-              className={`chapter-dot ${index === levelIndex ? "active" : ""} ${
-                completedSet.has(chapterLevel.id) ? "complete" : ""
-              }`}
-              key={chapterLevel.id}
-              type="button"
-              onClick={() => selectLevel(index)}
-              aria-label={`Open ${chapterLevel.chapter}`}
-              title={`${chapterLevel.chapter}: ${chapterLevel.title}`}
-            >
-              {chapterLevel.id}
-            </button>
-          ))}
-          <button
-            className="chapter-dot finale-dot"
-            type="button"
-            onClick={() => setShowFinale(true)}
-            aria-label="Open coming soon chapter"
-            title="Coming soon"
-          >
-            6
+        <div className="topbar-actions">
+          <a className="icon-button" href={chapterOneStory.sourceUrl} target="_blank" rel="noreferrer" aria-label="Read Chapter 1 on AO3" title="Read Chapter 1 on AO3">
+            <BookOpen size={19} />
+          </a>
+          <button className="icon-button" type="button" onClick={() => setFeedbackOpen(true)} aria-label="Send suggestion" title="Send suggestion">
+            <MessageCircle size={19} />
           </button>
-        </nav>
+          <button className="icon-button" type="button" onClick={shareGame} aria-label="Share prototype" title="Share prototype">
+            <Send size={18} />
+          </button>
+        </div>
       </header>
 
-      <section className="hud-panel mission-panel" aria-labelledby="mission-title">
-        <p className="kicker">{level.chapter}</p>
-        <h2 id="mission-title">{level.title}</h2>
-        <p>{level.subtitle}</p>
-        <div className="meter-group" aria-label="Hero condition">
-          <div className="meter">
-            <span>Heart</span>
-            <strong>{mission.hp}</strong>
-            <div className="bar">
-              <span style={{ width: `${mission.hp}%` }} />
-            </div>
-          </div>
-          <div className="stat-row">
-            <span>
-              <Heart size={16} /> {progress.hearts}
-            </span>
-            <span>
-              <Shield size={16} /> {progress.courage}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <section className="hud-panel objective-panel" aria-label="Mission objective">
-        <div className="objective-heading">
-          <Swords size={18} />
-          <strong>{level.objective}</strong>
-        </div>
-        <ul>
-          {level.pickups.map((item) => (
-            <li key={item} className={mission.collected.includes(item) ? "done" : ""}>
-              <Sparkles size={14} />
-              {item}
-            </li>
-          ))}
-          {level.enemies.map((enemy) => (
-            <li key={enemy} className={mission.defeated.includes(enemy) ? "done" : ""}>
-              <Zap size={14} />
-              {enemy}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="hud-panel log-panel" aria-label="Chapter log">
-        {mission.log.map((entry) => (
-          <p key={entry}>{entry}</p>
+      <section className="chapter-rail" aria-label="Chapter prototype progress">
+        <button className="chapter-node active" type="button">
+          1
+        </button>
+        {[2, 3, 4, 5].map((chapter) => (
+          <button className="chapter-node" type="button" disabled key={chapter} title="Future 2D chapter prototype">
+            {chapter}
+          </button>
         ))}
+        <button className="chapter-node future" type="button" disabled title="Chapter 6 coming soon">
+          6
+        </button>
       </section>
 
-      <div className="quick-actions">
-        <button className="icon-command" type="button" onClick={returnToStart} aria-label="Return to chapter one" title="Return to chapter one">
-          <Home size={19} />
-        </button>
-        <a className="icon-command" href={level.sourceUrl} target="_blank" rel="noreferrer" aria-label="Read this chapter on AO3" title="Read this chapter on AO3">
-          <BookOpen size={19} />
-        </a>
-        <button className="icon-command" type="button" onClick={shareGame} aria-label="Share game" title="Share game">
-          <Share2 size={19} />
-        </button>
-      </div>
+      <StoryPrototype
+        completedChapter={completedChapter}
+        onChoose={chooseOption}
+        onContinue={continueStory}
+        onFeedback={() => setFeedbackOpen(true)}
+        onPrevious={previousScene}
+        onReset={resetStory}
+        onReturnToVault={returnToVault}
+        pendingResult={pendingResult}
+        scene={scene}
+        story={story}
+      />
 
-      <MobileControls setControl={setControl} />
-
-      {briefingOpen && (
-        <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="briefing-title">
-          <section className="briefing">
-            <p className="kicker">{level.zone} / {level.weather}</p>
-            <h2 id="briefing-title">{level.title}</h2>
-            <p>{level.briefing}</p>
-            <div className="briefing-actions">
-              <button className="command primary" type="button" onClick={() => setBriefingOpen(false)}>
-                <Swords size={18} />
-                Begin Chapter
-              </button>
-              <a className="command" href={level.sourceUrl} target="_blank" rel="noreferrer">
-                <BookOpen size={18} />
-                Source
-              </a>
-            </div>
-          </section>
-        </div>
-      )}
-
-      {mission.complete && (
-        <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="complete-title">
-          <section className="briefing complete-briefing">
-            <p className="kicker">{level.chapter} Complete</p>
-            <h2 id="complete-title">{level.finalLevel ? "The Current Final Chapter" : "Chapter Gate Opened"}</h2>
-            <p>{level.completion}</p>
-            <div className="briefing-actions">
-              <button className="command primary" type="button" onClick={continueChapter}>
-                <Sparkles size={18} />
-                {level.finalLevel ? "Continue" : "Next Chapter"}
-              </button>
-              <button className="command" type="button" onClick={replay}>
-                <RotateCcw size={18} />
-                Replay
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <FeedbackPanel
+        currentScene={scene}
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        story={story}
+      />
 
       {shareStatus && <div className="toast">{shareStatus}</div>}
     </main>
+  );
+}
+
+function StoryPrototype({
+  completedChapter,
+  onChoose,
+  onContinue,
+  onFeedback,
+  onPrevious,
+  onReset,
+  onReturnToVault,
+  pendingResult,
+  scene,
+  story,
+}) {
+  const participants = scene.participants
+    .map((id) => getCharacterById(id))
+    .filter(Boolean);
+  const progressPercent =
+    ((story.sceneIndex + (story.complete ? 1 : 0)) / chapterOneStory.scenes.length) * 100;
+
+  return (
+    <div className="story-layout">
+      <aside className="story-card chapter-card">
+        <p className="kicker">{chapterOneStory.chapter}</p>
+        <h2>{chapterOneStory.title}</h2>
+        <p>{chapterOneStory.logline}</p>
+        <div className="story-progress" aria-label="Chapter progress">
+          <span style={{ width: `${progressPercent}%` }} />
+        </div>
+        <div className="stat-grid">
+          {Object.entries(storyStats).map(([key, stat]) => (
+            <div className="story-stat" key={key}>
+              <span>{stat.label}</span>
+              <strong>{story.stats[key] ?? 0}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="chapter-actions">
+          <button className="command" type="button" onClick={onReturnToVault}>
+            <Home size={17} />
+            Vault
+          </button>
+          <button className="command" type="button" onClick={onReset}>
+            <RotateCcw size={17} />
+            Reset
+          </button>
+        </div>
+      </aside>
+
+      <section className="story-card scene-card" aria-labelledby="scene-title">
+        {!story.complete ? (
+          <>
+            <div className="scene-meta">
+              <span>{scene.location}</span>
+              <span>{scene.time}</span>
+            </div>
+            <p className="kicker">{scene.mood}</p>
+            <h2 id="scene-title">{scene.title}</h2>
+            <p className="scene-narration">{scene.narration}</p>
+            <div className="scene-focus">
+              <Lightbulb size={18} />
+              <p>{scene.focus}</p>
+            </div>
+
+            {pendingResult ? (
+              <div className="choice-result" role="status">
+                <p className="kicker">Choice Logged</p>
+                <h3>{pendingResult.label}</h3>
+                <p>{pendingResult.result}</p>
+                <button className="command primary" type="button" onClick={onContinue}>
+                  <ChevronRight size={18} />
+                  Continue
+                </button>
+              </div>
+            ) : (
+              <div className="choice-grid" aria-label="Scene choices">
+                {scene.choices.map((choice) => (
+                  <button className="choice-card" type="button" key={choice.id} onClick={() => onChoose(choice)}>
+                    <span>{choice.label}</span>
+                    <small>{summarizeChoiceStats(choice.stats)}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <ChapterComplete
+            completedChapter={completedChapter}
+            onFeedback={onFeedback}
+            onReset={onReset}
+            story={story}
+          />
+        )}
+
+        <div className="scene-footer">
+          <button className="command" type="button" onClick={onPrevious} disabled={story.sceneIndex === 0 || Boolean(pendingResult) || story.complete}>
+            <ChevronLeft size={17} />
+            Previous
+          </button>
+          <button className="command" type="button" onClick={onFeedback}>
+            <MessageCircle size={17} />
+            Suggest
+          </button>
+        </div>
+      </section>
+
+      <aside className="story-card cast-card">
+        <p className="kicker">Scene Cast</p>
+        <div className="cast-list">
+          {participants.map((character) => (
+            <article className="cast-entry" key={character.id}>
+              <div className="portrait-token" aria-hidden="true">
+                {character.displayName.slice(0, 1)}
+              </div>
+              <div>
+                <h3>{character.displayName}</h3>
+                <p>{character.shortDescription}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="source-note">
+          <Shield size={18} />
+          <p>Character depth is source-backed from the current AO3 chapters and marked TODO where motives are still unknown.</p>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function ChapterComplete({ completedChapter, onFeedback, onReset, story }) {
+  const topStats = Object.entries(story.stats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([key]) => storyStats[key]?.label)
+    .join(" + ");
+
+  return (
+    <div className="complete-card">
+      <p className="kicker">{completedChapter ? "Chapter Replay Complete" : "Chapter Prototype Complete"}</p>
+      <h2>Chapter 1 Has A Playable Shape</h2>
+      <p>
+        This pass establishes Grian as the main character, Scar as home, Gem as healer, and the hero team as a source of both banter and pressure.
+      </p>
+      <div className="complete-summary">
+        <Star size={20} />
+        <span>Main emotional path: {topStats || "Unformed"}</span>
+      </div>
+      <div className="brief-actions">
+        <button className="command primary" type="button" onClick={onFeedback}>
+          <MessageCircle size={18} />
+          Send Leah Feedback
+        </button>
+        <button className="command" type="button" onClick={onReset}>
+          <RotateCcw size={18} />
+          Replay Chapter 1
+        </button>
+        <a className="command" href={ao3Links.firstChapter} target="_blank" rel="noreferrer">
+          <BookOpen size={18} />
+          Source
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function summarizeChoiceStats(stats = {}) {
+  const labels = Object.entries(stats).map(([key, value]) => {
+    const sign = value > 0 ? "+" : "";
+    return `${storyStats[key]?.label ?? key} ${sign}${value}`;
+  });
+  return labels.join(" / ") || "Story beat";
+}
+
+function FeedbackPanel({ currentScene, isOpen, onClose, story }) {
+  const [savedFeedback, setSavedFeedback] = useState(readFeedback);
+  const [draft, setDraft] = useState({
+    name: "Leah",
+    type: "Story note",
+    message: "",
+  });
+  const [status, setStatus] = useState("");
+
+  if (!isOpen) return null;
+
+  const choicePath = story.choices.map((choice) => `${choice.sceneTitle}: ${choice.label}`).join(" > ");
+  const statsSummary = Object.entries(story.stats)
+    .map(([key, value]) => `${storyStats[key]?.label ?? key}: ${value}`)
+    .join(", ");
+
+  const feedback = {
+    id: globalThis.crypto?.randomUUID?.() ?? String(Date.now()),
+    createdAt: new Date().toISOString(),
+    sceneId: currentScene.id,
+    sceneTitle: currentScene.title,
+    choicePath,
+    statsSummary,
+    ...draft,
+  };
+
+  const saveAndOpenIssue = () => {
+    if (!draft.message.trim()) {
+      setStatus("Write a note first.");
+      return;
+    }
+    const nextFeedback = [feedback, ...savedFeedback].slice(0, 20);
+    setSavedFeedback(nextFeedback);
+    safeWriteJson(FEEDBACK_KEY, nextFeedback);
+    const title = `[Prototype feedback] ${currentScene.title}`;
+    const issueUrl = `${REPO_ISSUE_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(buildFeedbackBody(feedback))}`;
+    window.open(issueUrl, "_blank", "noopener,noreferrer");
+    setDraft((current) => ({ ...current, message: "" }));
+    setStatus("Saved locally and opened GitHub.");
+  };
+
+  const copyFeedback = async () => {
+    if (!draft.message.trim()) {
+      setStatus("Write a note first.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(buildFeedbackBody(feedback));
+      setStatus("Copied feedback.");
+    } catch {
+      setStatus("Copy unavailable in this browser.");
+    }
+  };
+
+  return (
+    <div className="feedback-layer" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <section className="feedback-panel">
+        <div className="feedback-header">
+          <div>
+            <p className="kicker">Leah Feedback Channel</p>
+            <h2 id="feedback-title">Send In-game Suggestion</h2>
+          </div>
+          <button className="icon-button" type="button" onClick={onClose} aria-label="Close feedback">
+            <Check size={19} />
+          </button>
+        </div>
+        <label>
+          Name
+          <input
+            value={draft.name}
+            onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+          />
+        </label>
+        <label>
+          Type
+          <select
+            value={draft.type}
+            onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value }))}
+          >
+            <option>Story note</option>
+            <option>Character correction</option>
+            <option>Gameplay change</option>
+            <option>Bug</option>
+            <option>Visual direction</option>
+          </select>
+        </label>
+        <label>
+          Suggestion for {currentScene.title}
+          <textarea
+            value={draft.message}
+            onChange={(event) => setDraft((current) => ({ ...current, message: event.target.value }))}
+            placeholder="Write what should change, what feels off, or what Leah wants us to build next."
+            rows={7}
+          />
+        </label>
+        <div className="feedback-context">
+          <UserRound size={17} />
+          <span>{choicePath || "No choices recorded yet"}</span>
+        </div>
+        <div className="brief-actions">
+          <button className="command primary" type="button" onClick={saveAndOpenIssue}>
+            <Send size={18} />
+            Send To GitHub
+          </button>
+          <button className="command" type="button" onClick={copyFeedback}>
+            <MessageCircle size={18} />
+            Copy
+          </button>
+        </div>
+        <p className="feedback-status">
+          {status || `${savedFeedback.length} saved local suggestion${savedFeedback.length === 1 ? "" : "s"}.`}
+        </p>
+      </section>
+    </div>
+  );
+}
+
+function StoryBackdrop() {
+  return (
+    <div className="story-backdrop" aria-hidden="true">
+      <div className="pixel-sky" />
+      <div className="moon" />
+      <div className="city-row far">
+        {Array.from({ length: 14 }, (_, index) => (
+          <span key={index} />
+        ))}
+      </div>
+      <div className="city-row near">
+        {Array.from({ length: 10 }, (_, index) => (
+          <span key={index} />
+        ))}
+      </div>
+      <div className="street-glow" />
+    </div>
   );
 }
 
@@ -464,7 +633,9 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
   const [step, setStep] = useState(0);
   const [reinforced, setReinforced] = useState(false);
   const [answered, setAnswered] = useState([]);
+  const [optionOrder, setOptionOrder] = useState(createVaultOptionOrder);
   const current = vaultQuestions[step];
+  const currentOptions = optionOrder[step]?.options ?? current.options;
   const dialRotation = reinforced ? step * 118 - 24 : step * 118;
 
   const answerQuestion = (option) => {
@@ -473,10 +644,8 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
       setReinforced(true);
       return;
     }
-
     const nextAnswered = [...answered, current.dial];
     setAnswered(nextAnswered);
-
     if (step === vaultQuestions.length - 1) {
       window.setTimeout(onUnlock, 620);
       return;
@@ -488,6 +657,7 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
     setStep(0);
     setAnswered([]);
     setReinforced(false);
+    setOptionOrder(createVaultOptionOrder());
   };
 
   return (
@@ -516,8 +686,7 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
           <p className="kicker">Vault Entrance</p>
           <h1 id="vault-title">Hidden Hearts</h1>
           <p className="vault-copy">
-            Three lock turns. Three Chapter 1 receipts. The door only respects
-            people who paid attention.
+            Unlock the story prototype with Chapter 1 receipts. From here on, production follows the 2D story RPG path.
           </p>
 
           <div className="vault-progress" aria-label="Dial progress">
@@ -538,79 +707,36 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
                 <strong>{current.prompt}</strong>
               </div>
               <div className="answer-grid">
-                {current.options.map((option) => (
-                  <button className="answer-button" key={option} type="button" onClick={() => answerQuestion(option)}>
+                {currentOptions.map((option) => (
+                  <button key={option} type="button" onClick={() => answerQuestion(option)}>
                     {option}
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="vault-fail" role="alert">
-              <strong>Try again, loser.</strong>
-              <p>
-                You could not even be considered a sidekick to the worst villain.
-                Bahahaha. The vault has reinforced itself out of secondhand
-                embarrassment.
-              </p>
-              <div className="briefing-actions">
-                <a className="command primary" href={ao3Links.firstChapter} target="_blank" rel="noreferrer">
-                  <BookOpen size={18} />
-                  Re-read Chapter 1
-                </a>
-                <button className="command" type="button" onClick={retry}>
-                  <RotateCcw size={18} />
-                  Try Again
-                </button>
-                <button className="icon-command" type="button" onClick={shareGame} aria-label="Share game" title="Share game">
-                  <Share2 size={19} />
-                </button>
-              </div>
+            <div className="vault-warning">
+              <p>The vault locks itself again. Chapter details matter here.</p>
+              <button className="command primary" type="button" onClick={retry}>
+                <RotateCcw size={18} />
+                Retry
+              </button>
             </div>
           )}
+
+          <div className="vault-actions">
+            <a className="command" href={ao3Links.firstChapter} target="_blank" rel="noreferrer">
+              <BookOpen size={18} />
+              Read Chapter 1
+            </a>
+            <button className="command" type="button" onClick={shareGame}>
+              <Send size={18} />
+              Share
+            </button>
+          </div>
           {shareStatus && <p className="share-note">{shareStatus}</p>}
         </div>
       </section>
     </main>
-  );
-}
-
-function MobileControls({ setControl }) {
-  const bind = (name) => ({
-    onPointerDown: () => setControl(name, true),
-    onPointerUp: () => setControl(name, false),
-    onPointerCancel: () => setControl(name, false),
-    onPointerLeave: () => setControl(name, false),
-  });
-
-  return (
-    <div className="mobile-controls" aria-label="Movement controls">
-      <button className="icon-command" type="button" aria-label="Move forward" title="Move forward" {...bind("forward")}>
-        <ArrowUp size={20} />
-      </button>
-      <button className="icon-command" type="button" aria-label="Move left" title="Move left" {...bind("left")}>
-        <ArrowLeft size={20} />
-      </button>
-      <button className="icon-command action-button" type="button" aria-label="Power strike" title="Power strike" {...bind("action")}>
-        <Zap size={22} />
-      </button>
-      <button className="icon-command" type="button" aria-label="Move right" title="Move right" {...bind("right")}>
-        <ArrowRight size={20} />
-      </button>
-      <button className="icon-command" type="button" aria-label="Move backward" title="Move backward" {...bind("backward")}>
-        <ArrowDown size={20} />
-      </button>
-    </div>
-  );
-}
-
-function FinaleBackdrop() {
-  return (
-    <div className="finale-backdrop" aria-hidden="true">
-      <div className="gate gate-one" />
-      <div className="gate gate-two" />
-      <div className="gate gate-three" />
-      <div className="skyline-strip" />
-    </div>
   );
 }

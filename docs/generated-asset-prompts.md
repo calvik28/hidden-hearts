@@ -1,5 +1,13 @@
 # Generated Asset Prompts
 
+Status: paused until further notice.
+
+This is a legacy visual prompt document. It is not a story source of truth, and it is not the final 2D story RPG image pipeline. Several prompts use old game-mood language and should not be treated as canon unless checked against the AO3 text or Leah's future character bible. Do not generate new images from this document unless visual work is explicitly restarted.
+
+The future 2D story RPG will have its own image-generation pipeline for chapter backgrounds, portraits, UI, and story assets. That pipeline is currently paused until further notice.
+
+Temporary production visuals should use CSS/procedural blocky Minecraft-style placeholders until final image generation resumes.
+
 Use these prompts to create static image assets for Hidden Hearts RPG. Save finished files into `public/assets/generated/` using the exact paths in the manifest below. Do not call image APIs from the browser app; all generated art should be committed as local static files.
 
 ## Asset Manifest
@@ -54,9 +62,9 @@ Output: 1536x1024 PNG.
 ### Chapter 1 Background
 
 ```text
-Create a 16:9 fantasy RPG chapter background for Chapter 1, Smoke and Secrets.
-Mood: violet smoke, ember clues, restaurant-night chaos spilling into a city district, hidden hero identity, warm orange danger against deep blue shadows.
-Visual motifs: hidden hearts, subtle wings, ember trails, alley lights, magical smoke, distant skyline.
+Create a 16:9 fantasy RPG chapter background for Chapter 1.
+Mood: restaurant robbery, smoke from Tekbox burning the restaurant, apartment healing, hero patrol, hidden hero identity, warm orange danger against deep blue shadows.
+Visual motifs: hidden hearts, wings, city skyline, restaurant fire aftermath, apartment warmth, night patrol.
 Composition: calm lower center for gameplay UI, stronger detail around edges and horizon, no readable text, no logos, no watermark.
 Style: painterly cinematic game background, magical but grounded, readable on mobile.
 Output: 16:9 WebP.
@@ -65,8 +73,8 @@ Output: 16:9 WebP.
 ### Chapter 1 Sky Panel
 
 ```text
-Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 1 Smoke and Secrets.
-Scene: violet smoke over a nighttime city skyline, ember-orange glow near the horizon, faint hidden-heart constellations, subtle wing-shaped cloud forms.
+Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 1.
+Scene: nighttime city skyline after the restaurant fire, warm orange glow near the horizon, clean dark sky for patrol flight.
 Requirements: no foreground characters, no readable text, no logo, horizon readable behind 3D objects, dark upper sky.
 Style: atmospheric painterly skybox panel, soft depth, web game asset.
 Output: 16:9 WebP.
@@ -75,9 +83,9 @@ Output: 16:9 WebP.
 ### Chapter 2 Background
 
 ```text
-Create a 16:9 fantasy RPG chapter background for Chapter 2, Shift at the Vault.
-Mood: storm glass, hospital pressure, bank alarm, rain-bright cyan light, emotional urgency, fractured reflections.
-Visual motifs: moonlit glass, medical-blue glow, vault alarm arcs, hidden hearts, subtle wings, wet city pavement, distant hospital silhouette.
+Create a 16:9 fantasy RPG chapter background for Chapter 2.
+Mood: unexpected ICU shift, hospital pressure, bank heist, Moonlight's attack, Aceso disappearing, emotional urgency.
+Visual motifs: hospital halls, bank shadows, medical-blue glow, hidden hearts, wings, city pavement, distant hospital silhouette.
 Composition: calm lower center for UI, strong cyan horizon, no readable text, no logos, no watermark.
 Style: cinematic painterly game background, tense but clear, mobile-readable.
 Output: 16:9 WebP.
@@ -86,9 +94,9 @@ Output: 16:9 WebP.
 ### Chapter 2 Sky Panel
 
 ```text
-Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 2 Shift at the Vault.
-Scene: storm-glass night sky, cyan lightning diffused in clouds, rain haze, hospital and bank silhouettes in the far distance, faint heart-shaped light fragments.
-Requirements: no foreground characters, no readable text, no logo, center should stay clean behind the player and portal.
+Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 2.
+Scene: night sky over the city, with hospital and bank silhouettes in the far distance.
+Requirements: no foreground characters, no readable text, no logo, center should stay clean behind the player.
 Style: atmospheric painterly skybox panel, cool cyan and deep navy palette.
 Output: 16:9 WebP.
 ```
@@ -96,9 +104,9 @@ Output: 16:9 WebP.
 ### Chapter 3 Background
 
 ```text
-Create a 16:9 fantasy RPG chapter background for Chapter 3, Aceso's Light.
-Mood: moonlit alleys, gold sparks, recovery, pursuit, fragile healing, trust in a strange power.
-Visual motifs: warm gold healing motes, purple alley shadows, hidden hearts, subtle wings, soft magical trail through narrow city passages.
+Create a 16:9 fantasy RPG chapter background for Chapter 3.
+Mood: recovery, planning, rooftops, following Lucid and Zero, abandoned building rescue, Solo saving Aceso.
+Visual motifs: city rooftops, abandoned building, hidden hearts, wings, yellow healing glow from Solo, green healing sparks from Gem.
 Composition: calm lower center for UI, luminous gold path leading toward the horizon, no readable text, no logos, no watermark.
 Style: painterly cinematic game background, hopeful but tense, readable on mobile.
 Output: 16:9 WebP.
@@ -107,8 +115,8 @@ Output: 16:9 WebP.
 ### Chapter 3 Sky Panel
 
 ```text
-Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 3 Aceso's Light.
-Scene: deep purple moonlit alley skyline, warm gold sparks drifting upward, faint heart constellation, soft healing glow near horizon.
+Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 3.
+Scene: quiet nighttime city skyline seen from rooftops while the heroes search for Gem.
 Requirements: no characters, no readable text, no logo, clean central area for 3D gameplay.
 Style: atmospheric fantasy game sky panel, painterly, luminous gold and violet palette.
 Output: 16:9 WebP.
@@ -117,9 +125,9 @@ Output: 16:9 WebP.
 ### Chapter 4 Background
 
 ```text
-Create a 16:9 fantasy RPG chapter background for Chapter 4, Council of Warmth.
-Mood: safehouse warmth, soft rain, recovery, team trust, brave affection, quiet green and gold magic.
-Visual motifs: rain-lit windows, cozy safehouse glow, hidden hearts, subtle wing shapes in curtains or clouds, gentle mint healing motes.
+Create a 16:9 fantasy RPG chapter background for Chapter 4.
+Mood: Gem recovering at Pearl's house, tomato soup, a hero meeting at Jimmy's house, Grian alone at the bar, and the confession with Scar at the apartment.
+Visual motifs: Pearl's house, tomato soup, popcorn at Jimmy's house, streetlights, bar glow, apartment warmth, hidden hearts.
 Composition: calm lower center for UI, warm indoor light meeting cool rainy night, no readable text, no logos, no watermark.
 Style: painterly cinematic game background, intimate and magical, readable on mobile.
 Output: 16:9 WebP.
@@ -128,8 +136,8 @@ Output: 16:9 WebP.
 ### Chapter 4 Sky Panel
 
 ```text
-Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 4 Council of Warmth.
-Scene: soft rain over a safehouse district, mint-green glow in mist, warm window lights, gentle heart-shaped bokeh in the distance.
+Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 4.
+Scene: quiet city night with streetlights, apartment windows, and a warm bar glow in the distance.
 Requirements: no characters, no readable text, no logo, subtle enough to sit behind gameplay.
 Style: atmospheric fantasy game sky panel, cozy but still nighttime RPG.
 Output: 16:9 WebP.
@@ -138,9 +146,9 @@ Output: 16:9 WebP.
 ### Chapter 5 Background
 
 ```text
-Create a 16:9 fantasy RPG chapter background for Chapter 5, Cyclone's Snare.
-Mood: ashfall, office fire, emergency pressure, trap closing, red storm energy, cliffhanger danger.
-Visual motifs: ash and sparks, red-pink cyclone arcs, hospital emergency glow, hidden hearts fractured by shadow, subtle wings in smoke.
+Create a 16:9 fantasy RPG chapter background for Chapter 5.
+Mood: office fire, ER burn victims, patrol attack, arrow wound, Lucid hallucination, villains' headquarters, Cyclone's vines, cliffhanger danger.
+Visual motifs: hospital emergency glow, office fire aftermath, Clockers Cafe rooftop, alley shadows, thorn vines, hidden hearts, injured wings.
 Composition: calm lower center for UI, intense horizon and edges, no readable text, no logos, no watermark.
 Style: cinematic painterly game background, dramatic but readable, mobile-safe contrast.
 Output: 16:9 WebP.
@@ -149,9 +157,9 @@ Output: 16:9 WebP.
 ### Chapter 5 Sky Panel
 
 ```text
-Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 5 Cyclone's Snare.
-Scene: ashfall over a dark city, red cyclone glow, smoky horizon, ember particles, faint broken-heart constellation.
-Requirements: no foreground characters, no readable text, no logo, portal area should remain readable.
+Create a 16:9 distant sky panel for a Three.js RPG level, Chapter 5.
+Scene: dark city sky over the office fire area and Clockers Cafe, with smoke near the horizon.
+Requirements: no foreground characters, no readable text, no logo, central gameplay area should remain readable.
 Style: atmospheric fantasy game sky panel, red/pink/orange against dark maroon night.
 Output: 16:9 WebP.
 ```
@@ -160,7 +168,7 @@ Output: 16:9 WebP.
 
 ```text
 Create a square transparent PNG magical portal texture for Hidden Hearts RPG.
-Subject: luminous circular chapter gate ring with heart-shaped glyphs, wing-like arcs, tiny sparks, soft cyan/gold/rose edges, transparent center with faint vortex wisps.
+Subject: luminous circular level-completion ring with heart-shaped glyphs, wing-like arcs, tiny sparks, soft cyan/gold/rose edges, transparent center with faint vortex wisps.
 Requirements: alpha background, no text, no logo, no characters, readable at small size, usable on a Three.js circle plane with additive glow.
 Style: polished game VFX texture, magical, elegant, high contrast.
 Output: square PNG with transparency.

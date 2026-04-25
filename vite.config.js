@@ -9,7 +9,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ["react", "react-dom"],
-          scene: ["three"],
           icons: ["lucide-react"],
         },
       },
