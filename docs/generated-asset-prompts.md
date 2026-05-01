@@ -2,7 +2,7 @@
 
 Status: paused until further notice.
 
-This is a legacy visual prompt document. It is not a story source of truth, and it is not the final 2D story RPG image pipeline. Several prompts use old game-mood language and should not be treated as canon unless checked against the AO3 text or Leah's future character bible. Do not generate new images from this document unless visual work is explicitly restarted.
+This is a legacy visual prompt document. It is not a story source of truth, and it is not the final 2D story RPG image pipeline. Several prompts use old game-mood language and should not be treated as canon unless checked against the AO3 text or T-i's future character bible. Do not generate new images from this document unless visual work is explicitly restarted.
 
 The future 2D story RPG will have its own image-generation pipeline for chapter backgrounds, portraits, UI, and story assets. That pipeline is currently paused until further notice.
 
@@ -30,7 +30,7 @@ Use these prompts to create static image assets for Hidden Hearts RPG. Save fini
 | 3 | UI panel frame | `public/assets/generated/ui/ui-panel-frame.png` | PNG with alpha, 16:9 | HUD/briefing frame overlay |
 | 4 | Pickup icon | `public/assets/generated/icons/pickup-heart-clue.png` | PNG with alpha, square | Collectible sprite overlay |
 | 4 | Enemy sigil | `public/assets/generated/icons/enemy-shadow-sigil.png` | PNG with alpha, square | Enemy sprite overlay |
-| 5 | Finale illustration | `public/assets/generated/chapters/chapter-06-coming-soon.webp` | WebP, 16:9 | Chapter 6 finale backdrop |
+| 5 | Parked future finale placeholder | `public/assets/generated/chapters/chapter-06-coming-soon.webp` | WebP, 16:9 | Legacy/future expansion placeholder, not current playable scope |
 
 ## Shared Art Direction
 
@@ -204,10 +204,10 @@ Style: dark fantasy RPG enemy emblem, dangerous but clean.
 Output: square PNG with transparency.
 ```
 
-### Finale Illustration
+### Parked Future Finale Placeholder
 
 ```text
-Create a 16:9 cinematic Coming Soon finale illustration for Hidden Hearts RPG Chapter 6.
+Create a 16:9 cinematic future-expansion placeholder illustration for Hidden Hearts RPG.
 Mood: hopeful cliffhanger after danger, unresolved portal, night city, magical heart glow, subtle wings, the sense of a next mission forming.
 Composition: leave center-left calm for overlay text and buttons, place the portal or cliff-edge energy on the right, no readable text, no logo, no watermark.
 Style: emotional painterly fantasy RPG key art, polished, atmospheric, not too dark.

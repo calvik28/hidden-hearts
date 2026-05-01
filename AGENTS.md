@@ -2,7 +2,7 @@
 
 ## Project
 
-Hidden Hearts RPG is a browser-based adaptation of Leah's fanfic Hidden Hearts, published under the author codename Theo_innit.
+Hidden Hearts RPG is a browser-based adaptation of T-i's fanfic Hidden Hearts, published under the author codename Theo_innit.
 
 The current production direction is a richer 2D retro story RPG focused on characters, dialogue, emotional pacing, and chapter-based narrative progression.
 
@@ -55,11 +55,13 @@ The priority is now the 2D retro story RPG foundation:
 
 Future gameplay should move toward a visual novel + RPG-lite + storybook adventure format, not a real-time 3D action game.
 
+Current playable scope: Chapter 1 only. Stretch Chapter 1 across the current game architecture as six Chapter 1 story parts; do not add playable Chapters 2-6 until the user explicitly asks.
+
 ## Do not break
 
 Preserve the current production flow:
 
-Vault entrance → Chapter 1 quiz → 2D story RPG prototype → future chapter prototypes.
+Vault entrance → Chapter 1 quiz → six-part Chapter 1 story RPG prototype → Chapter 1 complete.
 
 Do not change these vault answers unless explicitly asked:
 
@@ -83,7 +85,7 @@ Guard localStorage access so restricted/private browser modes do not crash the a
 - Avoid inventing lore, relationships, secrets, or character arcs that the user has not provided.
 - Use obvious TODO placeholders for character details that still need the user's deeper character file.
 - Keep character IDs stable once introduced.
-- Aceso is Gem's hero identity, not a separate character, unless Leah later says otherwise.
+- Aceso is Gem's hero identity, not a separate character, unless T-i later says otherwise.
 - Prefer chapter/story planning documents before broad app rewrites.
 - Do not build the full 2D story engine until explicitly asked.
 

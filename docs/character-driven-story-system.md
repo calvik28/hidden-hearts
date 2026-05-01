@@ -86,6 +86,8 @@ Chapter scenes are now the production path and can remain separate from the old 
 
 This lets the game move toward a chapter-based interactive narrative while preserving current progress and vault systems.
 
+Current playable scope is Chapter 1 only. Use Chapter 1 scene parts to fill the present architecture; Chapters 2-6 should remain future expansion work.
+
 ## Recommended Future Files
 
 - `src/game/characters.js` - character bible and relationship data
@@ -96,7 +98,7 @@ This lets the game move toward a chapter-based interactive narrative while prese
 - `src/game/storyMode/DialogueBox.jsx` - speaker name, text, portrait, and advance controls
 - `src/game/storyMode/ChoicePanel.jsx` - player choice rendering and callbacks
 
-These files should be added incrementally. Chapter 1 now has the first tiny playable prototype; future work should extend that foundation.
+These files should be added incrementally. Chapter 1 now has the first playable prototype, stretched into six story parts; future work should deepen that Chapter 1 foundation before adding Chapters 2-6.
 
 ## Constraints
 

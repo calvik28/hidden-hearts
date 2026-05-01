@@ -2,14 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen,
   Check,
-  ChevronLeft,
   ChevronRight,
   Home,
-  Lightbulb,
   Lock,
   LockKeyhole,
   MessageCircle,
   RotateCcw,
+  Search,
   Send,
   Shield,
   Sparkles,
@@ -29,6 +28,81 @@ const STORAGE_KEY = "hidden-hearts-progress";
 const VAULT_KEY = "hidden-hearts-vault-open";
 const FEEDBACK_KEY = "hidden-hearts-feedback";
 const REPO_ISSUE_URL = "https://github.com/calvik28/hidden-hearts/issues/new";
+const STAT_PAIR_COPY = {
+  "tenderness-trust": {
+    label: "Trust + Tenderness",
+    text:
+      "This run lets Chapter 1 lean into care: Grian survives the danger by noticing who stays close, and the softer scenes carry the ending home.",
+  },
+  "courage-secrecy": {
+    label: "Courage + Secrecy",
+    text:
+      "This run keeps the split life sharp. Grian moves toward danger when people need him, but every brave step asks him to hide more carefully.",
+  },
+  "courage-trust": {
+    label: "Courage + Trust",
+    text:
+      "This run frames Chapter 1 around team pressure: Grian acts when the city calls, and the people beside him matter as much as the rescue.",
+  },
+  "secrecy-tenderness": {
+    label: "Secrecy + Tenderness",
+    text:
+      "This run keeps the ache close to home. Grian wants ordinary warmth, but the secret identity keeps shaping what he can safely show.",
+  },
+  "secrecy-trust": {
+    label: "Trust + Secrecy",
+    text:
+      "This run keeps care and concealment in tension. Grian lets people steady him in small ways while still protecting the truth of Astraeus.",
+  },
+  "courage-tenderness": {
+    label: "Courage + Tenderness",
+    text:
+      "This run lets action and softness answer each other. The city needs Grian brave, and the quiet scenes show why that bravery costs him.",
+  },
+};
+const STAT_PAIR_ORDER = ["trust", "courage", "secrecy", "tenderness"];
+const CAST_NOTE_FALLBACKS = {
+  grian: "Current lens: carrying the emotional choice through this beat.",
+  scar: "Current pressure: home, care, and what Grian lets him see.",
+  jimmy: "Current pressure: friend-shaped banter under real concern.",
+  gem: "Current pressure: care, healing, and the cost of needing help.",
+  pearl: "Current pressure: team steadiness around the chapter's danger.",
+  lizzie: "Current pressure: friend-group warmth around the hero life.",
+  mumbo: "Current pressure: hospital normalcy and future secret-identity strain.",
+  tekbox: "Current pressure: named danger from the chapter's villain side.",
+  ethical: "Current pressure: named danger from the chapter's villain side.",
+  tithonus: "Current pressure: part of the wider villain threat.",
+};
+const SCENE_CAST_NOTES = {
+  "restaurant-smoke": {
+    grian: "Thinking like Astraeus while staying visibly civilian.",
+    jimmy: "Caught beside Grian as the restaurant turns dangerous.",
+    tekbox: "One of the named threats forcing the crisis.",
+    ethical: "One of the named threats forcing the crisis.",
+  },
+  "smoke-still-there": {
+    grian: "Still carrying the restaurant smoke after everyone gets out.",
+    jimmy: "Safe now, but still close enough for Grian to check on.",
+    gem: "Healing the injury while watching what Grian tries to minimize.",
+  },
+  "before-they-go": {
+    grian: "Helped by friends, already preparing to hide the proof.",
+    jimmy: "Hovering with affection tucked under familiar teasing.",
+    gem: "Watching the healed wound and the guilt around it.",
+  },
+  "key-in-door": {
+    grian: "Choosing what version of the night Scar gets to enter.",
+    scar: "Bringing the apartment back toward warmth after work.",
+  },
+  "pasta-dinner": {
+    grian: "Letting a small dinner carry more feeling than he says.",
+    scar: "Turning plain pasta into home by being there.",
+  },
+  "walk-home": {
+    grian: "Cold, tired, and closer to honesty than he means to be.",
+    scar: "Steadying Grian through the chapter's soft landing.",
+  },
+};
 
 function createProgress() {
   return {
@@ -36,6 +110,9 @@ function createProgress() {
     highestChapter: 1,
     hearts: 0,
     courage: 0,
+    storyRuns: {
+      [chapterOneStory.id]: createStoryProgress(),
+    },
   };
 }
 
@@ -58,15 +135,100 @@ function safeWriteJson(key, value) {
   return true;
 }
 
+function normalizeStoryFlags(flags) {
+  if (Array.isArray(flags)) {
+    return Object.fromEntries(flags.filter((flag) => typeof flag === "string" && flag).map((flag) => [flag, true]));
+  }
+
+  if (!flags || typeof flags !== "object") return {};
+
+  return Object.fromEntries(
+    Object.entries(flags).filter(([flag, value]) => typeof flag === "string" && flag && Boolean(value)),
+  );
+}
+
+function normalizeStoryStats(stats = {}) {
+  return Object.fromEntries(
+    Object.keys(storyStats).map((key) => {
+      const value = Number(stats?.[key]);
+      return [key, Number.isFinite(value) ? value : 0];
+    }),
+  );
+}
+
+function normalizeChoiceLog(choices = []) {
+  if (!Array.isArray(choices)) return [];
+
+  return choices
+    .filter((choice) => choice && typeof choice === "object" && typeof choice.sceneId === "string")
+    .map((choice) => ({
+      sceneId: choice.sceneId,
+      sceneTitle: typeof choice.sceneTitle === "string" ? choice.sceneTitle : "Unknown scene",
+      choiceId: typeof choice.choiceId === "string" ? choice.choiceId : "unknown-choice",
+      label: typeof choice.label === "string" ? choice.label : "Choice",
+      ...(Array.isArray(choice.flags) && choice.flags.length > 0 ? { flags: choice.flags } : {}),
+    }));
+}
+
+function normalizeStoryProgress(storyProgress) {
+  const base = createStoryProgress();
+  if (!storyProgress || typeof storyProgress !== "object") return base;
+
+  const rawSceneIndex = Number(storyProgress.sceneIndex);
+  const maxSceneIndex = Math.max(0, chapterOneStory.scenes.length - 1);
+
+  return {
+    ...base,
+    sceneIndex: Number.isInteger(rawSceneIndex)
+      ? Math.max(0, Math.min(rawSceneIndex, maxSceneIndex))
+      : base.sceneIndex,
+    choices: normalizeChoiceLog(storyProgress.choices),
+    stats: normalizeStoryStats(storyProgress.stats),
+    flags: normalizeStoryFlags(storyProgress.flags),
+    complete: Boolean(storyProgress.complete),
+  };
+}
+
+function normalizeStoryRuns(storyRuns) {
+  const savedRuns = storyRuns && typeof storyRuns === "object" && !Array.isArray(storyRuns) ? storyRuns : {};
+
+  return {
+    ...savedRuns,
+    [chapterOneStory.id]: normalizeStoryProgress(savedRuns[chapterOneStory.id]),
+  };
+}
+
+function getStoredStoryProgress(progress) {
+  return normalizeStoryProgress(progress?.storyRuns?.[chapterOneStory.id]);
+}
+
+function withStoredStoryProgress(progress, storyProgress) {
+  return {
+    ...progress,
+    storyRuns: {
+      ...(progress.storyRuns ?? {}),
+      [chapterOneStory.id]: normalizeStoryProgress(storyProgress),
+    },
+  };
+}
+
 function readProgress() {
   const parsed = safeReadJson(STORAGE_KEY, null);
   if (parsed && Array.isArray(parsed.completed)) {
-    return { ...createProgress(), ...parsed };
+    const merged = { ...createProgress(), ...parsed };
+    return { ...merged, storyRuns: normalizeStoryRuns(merged.storyRuns) };
   }
   return createProgress();
 }
 
 function readVaultOpen() {
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("resume") !== "story") return false;
+  } catch {
+    return false;
+  }
+
   try {
     return localStorage.getItem(VAULT_KEY) === "true";
   } catch {
@@ -77,6 +239,20 @@ function readVaultOpen() {
 function writeVaultOpen() {
   try {
     localStorage.setItem(VAULT_KEY, "true");
+  } catch {
+    return;
+  }
+}
+
+function updateResumeUrl(shouldResume) {
+  try {
+    const nextUrl = new URL(window.location.href);
+    if (shouldResume) {
+      nextUrl.searchParams.set("resume", "story");
+    } else {
+      nextUrl.searchParams.delete("resume");
+    }
+    window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
   } catch {
     return;
   }
@@ -115,6 +291,119 @@ function applyChoiceStats(currentStats, choiceStats = {}) {
   return next;
 }
 
+function getChoiceFlagList(setsFlag) {
+  if (!setsFlag) return [];
+  if (Array.isArray(setsFlag)) return setsFlag.filter((flag) => typeof flag === "string" && flag);
+  return typeof setsFlag === "string" && setsFlag ? [setsFlag] : [];
+}
+
+function applyChoiceFlags(currentFlags = {}, setsFlag) {
+  const next = normalizeStoryFlags(currentFlags);
+  for (const flag of getChoiceFlagList(setsFlag)) {
+    next[flag] = true;
+  }
+  return next;
+}
+
+function getPointEvents(stats = {}) {
+  return Object.entries(stats)
+    .filter(([, value]) => value !== 0)
+    .map(([key, value]) => {
+      const stat = storyStats[key] ?? {};
+      const amount = value > 0 ? `+${value}` : `${value}`;
+      return {
+        key,
+        amount,
+        label: stat.label ?? key,
+        note: stat.pointEvent ?? stat.description ?? "This choice changes how the chapter reads.",
+      };
+    });
+}
+
+function getPendingResultFromStory(storyProgress, scene) {
+  if (storyProgress.complete) return null;
+  const lastChoice = storyProgress.choices.at(-1);
+  if (!lastChoice || lastChoice.sceneId !== scene.id) return null;
+
+  const choice = scene.choices.find((candidate) => candidate.id === lastChoice.choiceId);
+  if (!choice) return null;
+
+  return {
+    sceneTitle: scene.title,
+    label: lastChoice.label || choice.label,
+    result: choice.result,
+    stats: choice.stats ?? {},
+  };
+}
+
+function getSceneCallback(scene, flags = {}) {
+  if (!Array.isArray(scene.callbacks)) return null;
+  return scene.callbacks.find((callback) => flags?.[callback.flag]) ?? null;
+}
+
+function getSceneCastNote(scene, character) {
+  return (
+    SCENE_CAST_NOTES[scene.id]?.[character.id]
+    ?? CAST_NOTE_FALLBACKS[character.id]
+    ?? `Present in ${scene.title}.`
+  );
+}
+
+function getSceneInspectables(scene) {
+  return Array.isArray(scene.inspectables) ? scene.inspectables : [];
+}
+
+function isDetailInspected(detail, flags = {}) {
+  return Boolean(detail.setsFlag && flags?.[detail.setsFlag]);
+}
+
+function getChapterOnePartIndex(sceneIndex) {
+  const parts = chapterOneStory.parts ?? [];
+  if (parts.length === 0) return 0;
+  const safeSceneIndex = Math.max(0, Math.min(sceneIndex, chapterOneStory.scenes.length - 1));
+  let activePartIndex = 0;
+
+  parts.forEach((part, index) => {
+    const firstSceneIndex = chapterOneStory.scenes.findIndex((scene) => scene.id === part.firstSceneId);
+    if (firstSceneIndex !== -1 && firstSceneIndex <= safeSceneIndex) {
+      activePartIndex = index;
+    }
+  });
+
+  return activePartIndex;
+}
+
+function getTopStatEntries(stats) {
+  return Object.entries(stats)
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return STAT_PAIR_ORDER.indexOf(a[0]) - STAT_PAIR_ORDER.indexOf(b[0]);
+    })
+    .slice(0, 2);
+}
+
+function getCompletionPath(story) {
+  const topEntries = getTopStatEntries(story.stats);
+  if (topEntries.length === 0 || topEntries.every(([, value]) => value === 0)) {
+    return {
+      label: "Unformed",
+      text:
+        "This run has not settled into an emotional path yet. Replay Chapter 1 to let the choices leave a clearer shape.",
+    };
+  }
+
+  const orderedLabels = topEntries.map(([key]) => storyStats[key]?.label ?? key).join(" + ");
+  const pairKey = topEntries.map(([key]) => key).sort().join("-");
+  const copy = STAT_PAIR_COPY[pairKey];
+
+  return {
+    label: orderedLabels,
+    text:
+      copy?.text
+      ?? "This run gives Chapter 1 a mixed emotional shape, with Grian pulled between care, danger, secrecy, and trust.",
+  };
+}
+
 function buildFeedbackBody(feedback) {
   return [
     "## In-game suggestion",
@@ -135,13 +424,15 @@ function buildFeedbackBody(feedback) {
 export default function App() {
   const [progress, setProgress] = useState(readProgress);
   const [vaultOpen, setVaultOpen] = useState(readVaultOpen);
-  const [story, setStory] = useState(createStoryProgress);
+  const [story, setStory] = useState(() => getStoredStoryProgress(readProgress()));
   const [pendingResult, setPendingResult] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
 
   const scene = chapterOneStory.scenes[story.sceneIndex] ?? chapterOneStory.scenes[0];
+  const pendingResultForScene = pendingResult ?? getPendingResultFromStory(story, scene);
   const completedChapter = progress.completed.includes(chapterOneStory.id);
+  const activePartIndex = getChapterOnePartIndex(story.sceneIndex);
   const shellStyle = useMemo(
     () => ({
       "--vault-bg-image": `url("${generatedAssets.ui.titleEntranceBackground}")`,
@@ -154,16 +445,23 @@ export default function App() {
     safeWriteJson(STORAGE_KEY, progress);
   }, [progress]);
 
+  useEffect(() => {
+    setProgress((current) => withStoredStoryProgress(current, story));
+  }, [story]);
+
   const unlockVault = () => {
     writeVaultOpen();
+    updateResumeUrl(true);
     setVaultOpen(true);
   };
 
   const chooseOption = (choice) => {
-    if (pendingResult || story.complete) return;
+    if (pendingResultForScene || story.complete) return;
+    const flags = getChoiceFlagList(choice.setsFlag);
     setStory((current) => ({
       ...current,
       stats: applyChoiceStats(current.stats, choice.stats),
+      flags: applyChoiceFlags(current.flags, choice.setsFlag),
       choices: [
         ...current.choices,
         {
@@ -171,6 +469,7 @@ export default function App() {
           sceneTitle: scene.title,
           choiceId: choice.id,
           label: choice.label,
+          ...(flags.length > 0 ? { flags } : {}),
         },
       ],
     }));
@@ -180,6 +479,14 @@ export default function App() {
       result: choice.result,
       stats: choice.stats ?? {},
     });
+  };
+
+  const inspectDetail = (detail) => {
+    if (pendingResultForScene || story.complete || !detail.setsFlag) return;
+    setStory((current) => ({
+      ...current,
+      flags: applyChoiceFlags(current.flags, detail.setsFlag),
+    }));
   };
 
   const continueStory = () => {
@@ -193,7 +500,7 @@ export default function App() {
         return {
           ...current,
           completed: [...completed].sort((a, b) => a - b),
-          highestChapter: Math.max(current.highestChapter, 2),
+          highestChapter: Math.max(current.highestChapter, chapterOneStory.id),
           hearts: wasComplete ? current.hearts : current.hearts + 1,
           courage: wasComplete ? current.courage : current.courage + 12,
         };
@@ -207,14 +514,6 @@ export default function App() {
     }));
   };
 
-  const previousScene = () => {
-    if (pendingResult || story.sceneIndex === 0 || story.complete) return;
-    setStory((current) => ({
-      ...current,
-      sceneIndex: Math.max(0, current.sceneIndex - 1),
-    }));
-  };
-
   const resetStory = () => {
     setStory(createStoryProgress());
     setPendingResult(null);
@@ -222,6 +521,7 @@ export default function App() {
 
   const returnToVault = () => {
     setVaultOpen(false);
+    updateResumeUrl(false);
     try {
       localStorage.removeItem(VAULT_KEY);
     } catch {
@@ -232,7 +532,7 @@ export default function App() {
   const shareGame = async () => {
     const payload = {
       title: "Hidden Hearts RPG",
-      text: "I played the Hidden Hearts 2D story RPG prototype.",
+      text: "I played the Hidden Hearts Chapter 1 story prototype.",
       url: window.location.href,
     };
     try {
@@ -265,7 +565,7 @@ export default function App() {
       <StoryBackdrop />
       <header className="story-topbar">
         <div>
-          <p className="kicker">Production Prototype</p>
+          <p className="kicker">Chapter 1 Prototype</p>
           <h1>Hidden Hearts</h1>
         </div>
         <div className="topbar-actions">
@@ -281,18 +581,27 @@ export default function App() {
         </div>
       </header>
 
-      <section className="chapter-rail" aria-label="Chapter prototype progress">
-        <button className="chapter-node active" type="button">
-          1
+      <section className="chapter-rail" aria-label="Vault and Chapter 1 story parts">
+        <button
+          className="chapter-node vault-node"
+          type="button"
+          onClick={returnToVault}
+          aria-label="Return to vault entrance"
+          title="Return to vault entrance"
+        >
+          <LockKeyhole size={18} />
         </button>
-        {[2, 3, 4, 5].map((chapter) => (
-          <button className="chapter-node" type="button" disabled key={chapter} title="Future 2D chapter prototype">
-            {chapter}
-          </button>
+        {chapterOneStory.parts.map((part, index) => (
+          <div
+            className={`chapter-node story-part-node ${index === activePartIndex ? "active" : ""} ${index < activePartIndex || story.complete ? "complete" : ""}`}
+            key={part.id}
+            aria-current={index === activePartIndex ? "step" : undefined}
+            aria-label={`${part.label}: ${part.title}`}
+            title={`${part.label}: ${part.title}`}
+          >
+            {index + 1}
+          </div>
         ))}
-        <button className="chapter-node future" type="button" disabled title="Chapter 6 coming soon">
-          6
-        </button>
       </section>
 
       <StoryPrototype
@@ -300,10 +609,10 @@ export default function App() {
         onChoose={chooseOption}
         onContinue={continueStory}
         onFeedback={() => setFeedbackOpen(true)}
-        onPrevious={previousScene}
+        onInspect={inspectDetail}
         onReset={resetStory}
         onReturnToVault={returnToVault}
-        pendingResult={pendingResult}
+        pendingResult={pendingResultForScene}
         scene={scene}
         story={story}
       />
@@ -325,7 +634,7 @@ function StoryPrototype({
   onChoose,
   onContinue,
   onFeedback,
-  onPrevious,
+  onInspect,
   onReset,
   onReturnToVault,
   pendingResult,
@@ -337,6 +646,10 @@ function StoryPrototype({
     .filter(Boolean);
   const progressPercent =
     ((story.sceneIndex + (story.complete ? 1 : 0)) / chapterOneStory.scenes.length) * 100;
+  const pointEvents = getPointEvents(pendingResult?.stats);
+  const currentPart = chapterOneStory.parts[getChapterOnePartIndex(story.sceneIndex)];
+  const sceneCallback = getSceneCallback(scene, story.flags);
+  const inspectables = getSceneInspectables(scene);
 
   return (
     <div className="story-layout">
@@ -344,6 +657,13 @@ function StoryPrototype({
         <p className="kicker">{chapterOneStory.chapter}</p>
         <h2>{chapterOneStory.title}</h2>
         <p>{chapterOneStory.logline}</p>
+        {currentPart && (
+          <div className="part-summary">
+            <span>{currentPart.label}</span>
+            <strong>{currentPart.title}</strong>
+            <p>{currentPart.description}</p>
+          </div>
+        )}
         <div className="story-progress" aria-label="Chapter progress">
           <span style={{ width: `${progressPercent}%` }} />
         </div>
@@ -377,16 +697,39 @@ function StoryPrototype({
             <p className="kicker">{scene.mood}</p>
             <h2 id="scene-title">{scene.title}</h2>
             <p className="scene-narration">{scene.narration}</p>
-            <div className="scene-focus">
-              <Lightbulb size={18} />
-              <p>{scene.focus}</p>
-            </div>
+            {scene.dialogue && <SceneDialogue key={scene.id} lines={scene.dialogue} />}
+            {sceneCallback && <SceneCallback callback={sceneCallback} />}
+            {inspectables.length > 0 && !pendingResult && (
+              <SceneInspectables
+                details={inspectables}
+                flags={story.flags}
+                onInspect={onInspect}
+              />
+            )}
 
             {pendingResult ? (
               <div className="choice-result" role="status">
                 <p className="kicker">Choice Logged</p>
                 <h3>{pendingResult.label}</h3>
                 <p>{pendingResult.result}</p>
+                {pointEvents.length > 0 && (
+                  <div className="point-event" aria-label="Points gained">
+                    <div className="point-event-header">
+                      <Sparkles size={18} />
+                      <span>Points Gained</span>
+                    </div>
+                    <div className="point-event-grid">
+                      {pointEvents.map((event) => (
+                        <div className="point-tick" key={event.key}>
+                          <strong>
+                            {event.label} {event.amount}
+                          </strong>
+                          <p>{event.note}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <button className="command primary" type="button" onClick={onContinue}>
                   <ChevronRight size={18} />
                   Continue
@@ -397,7 +740,6 @@ function StoryPrototype({
                 {scene.choices.map((choice) => (
                   <button className="choice-card" type="button" key={choice.id} onClick={() => onChoose(choice)}>
                     <span>{choice.label}</span>
-                    <small>{summarizeChoiceStats(choice.stats)}</small>
                   </button>
                 ))}
               </div>
@@ -413,10 +755,6 @@ function StoryPrototype({
         )}
 
         <div className="scene-footer">
-          <button className="command" type="button" onClick={onPrevious} disabled={story.sceneIndex === 0 || Boolean(pendingResult) || story.complete}>
-            <ChevronLeft size={17} />
-            Previous
-          </button>
           <button className="command" type="button" onClick={onFeedback}>
             <MessageCircle size={17} />
             Suggest
@@ -434,6 +772,7 @@ function StoryPrototype({
               </div>
               <div>
                 <h3>{character.displayName}</h3>
+                <p className="cast-scene-note">{getSceneCastNote(scene, character)}</p>
                 <p>{character.shortDescription}</p>
               </div>
             </article>
@@ -448,28 +787,108 @@ function StoryPrototype({
   );
 }
 
+function SceneCallback({ callback }) {
+  return (
+    <div className="scene-callback" role="status">
+      <Sparkles size={18} />
+      <div>
+        <strong>{callback.label}</strong>
+        <p>{callback.text}</p>
+      </div>
+    </div>
+  );
+}
+
+function SceneInspectables({ details, flags, onInspect }) {
+  const revealedDetails = details.filter((detail) => isDetailInspected(detail, flags));
+
+  return (
+    <div className="inspect-panel">
+      <div className="inspect-header">
+        <Search size={17} />
+        <span>Inspect</span>
+      </div>
+      <div className="inspect-actions">
+        {details.map((detail) => {
+          const inspected = isDetailInspected(detail, flags);
+          return (
+            <button
+              aria-pressed={inspected}
+              className={`command inspect-command ${inspected ? "active" : ""}`}
+              key={detail.id}
+              onClick={() => onInspect(detail)}
+              type="button"
+            >
+              <Search size={16} />
+              {detail.label}
+            </button>
+          );
+        })}
+      </div>
+      {revealedDetails.map((detail) => (
+        <p className="inspect-result" key={detail.id}>
+          {detail.text}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function SceneDialogue({ lines }) {
+  const [lineIndex, setLineIndex] = useState(0);
+  if (!Array.isArray(lines) || lines.length === 0) return null;
+
+  const line = lines[Math.min(lineIndex, lines.length - 1)];
+  const speaker = getCharacterById(line.speakerId);
+  const speakerName = speaker?.displayName ?? line.speakerId;
+  const speakerInitial = speakerName.slice(0, 1);
+  const hasNextLine = lineIndex < lines.length - 1;
+
+  return (
+    <div className="scene-dialogue" aria-label="Scene dialogue">
+      <div className="dialogue-speaker">
+        <div className="dialogue-token" aria-hidden="true">
+          {speakerInitial}
+        </div>
+        <div>
+          <strong>{speakerName}</strong>
+          {line.tone && <span>{line.tone}</span>}
+        </div>
+      </div>
+      <p>{line.line}</p>
+      {hasNextLine && (
+        <button
+          className="command dialogue-next"
+          onClick={() => setLineIndex((current) => Math.min(current + 1, lines.length - 1))}
+          type="button"
+        >
+          <ChevronRight size={16} />
+          Next
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ChapterComplete({ completedChapter, onFeedback, onReset, story }) {
-  const topStats = Object.entries(story.stats)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 2)
-    .map(([key]) => storyStats[key]?.label)
-    .join(" + ");
+  const completionPath = getCompletionPath(story);
 
   return (
     <div className="complete-card">
       <p className="kicker">{completedChapter ? "Chapter Replay Complete" : "Chapter Prototype Complete"}</p>
-      <h2>Chapter 1 Has A Playable Shape</h2>
+      <h2>Chapter 1 Run Complete</h2>
       <p>
-        This pass establishes Grian as the main character, Scar as home, Gem as healer, and the hero team as a source of both banter and pressure.
+        This build stays inside Chapter 1 and stretches it across the current game structure: restaurant danger, recovery, home, work, patrol, and the bar night.
       </p>
       <div className="complete-summary">
         <Star size={20} />
-        <span>Main emotional path: {topStats || "Unformed"}</span>
+        <span>Main emotional path: {completionPath.label}</span>
       </div>
+      <p className="complete-path-copy">{completionPath.text}</p>
       <div className="brief-actions">
         <button className="command primary" type="button" onClick={onFeedback}>
           <MessageCircle size={18} />
-          Send Leah Feedback
+          Send T-i Feedback
         </button>
         <button className="command" type="button" onClick={onReset}>
           <RotateCcw size={18} />
@@ -484,18 +903,10 @@ function ChapterComplete({ completedChapter, onFeedback, onReset, story }) {
   );
 }
 
-function summarizeChoiceStats(stats = {}) {
-  const labels = Object.entries(stats).map(([key, value]) => {
-    const sign = value > 0 ? "+" : "";
-    return `${storyStats[key]?.label ?? key} ${sign}${value}`;
-  });
-  return labels.join(" / ") || "Story beat";
-}
-
 function FeedbackPanel({ currentScene, isOpen, onClose, story }) {
   const [savedFeedback, setSavedFeedback] = useState(readFeedback);
   const [draft, setDraft] = useState({
-    name: "Leah",
+    name: "T-i",
     type: "Story note",
     message: "",
   });
@@ -504,9 +915,14 @@ function FeedbackPanel({ currentScene, isOpen, onClose, story }) {
   if (!isOpen) return null;
 
   const choicePath = story.choices.map((choice) => `${choice.sceneTitle}: ${choice.label}`).join(" > ");
+  const choiceCount = story.choices.length;
   const statsSummary = Object.entries(story.stats)
     .map(([key, value]) => `${storyStats[key]?.label ?? key}: ${value}`)
     .join(", ");
+  const feedbackContextSummary =
+    choiceCount > 0
+      ? `${choiceCount} choice${choiceCount === 1 ? "" : "s"} recorded. ${statsSummary}`
+      : "No choices recorded yet.";
 
   const feedback = {
     id: globalThis.crypto?.randomUUID?.() ?? String(Date.now()),
@@ -551,7 +967,7 @@ function FeedbackPanel({ currentScene, isOpen, onClose, story }) {
       <section className="feedback-panel">
         <div className="feedback-header">
           <div>
-            <p className="kicker">Leah Feedback Channel</p>
+            <p className="kicker">T-i Feedback Channel</p>
             <h2 id="feedback-title">Send In-game Suggestion</h2>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="Close feedback">
@@ -583,14 +999,22 @@ function FeedbackPanel({ currentScene, isOpen, onClose, story }) {
           <textarea
             value={draft.message}
             onChange={(event) => setDraft((current) => ({ ...current, message: event.target.value }))}
-            placeholder="Write what should change, what feels off, or what Leah wants us to build next."
+            placeholder="Write what should change, what feels off, or what T-i wants us to build next."
             rows={7}
           />
         </label>
-        <div className="feedback-context">
-          <UserRound size={17} />
-          <span>{choicePath || "No choices recorded yet"}</span>
-        </div>
+        <details className="feedback-context">
+          <summary>
+            <UserRound size={17} />
+            <span>{feedbackContextSummary}</span>
+          </summary>
+          <div className="feedback-context-body">
+            <strong>Choice path</strong>
+            <span>{choicePath || "No choices recorded yet"}</span>
+            <strong>Stats</strong>
+            <span>{statsSummary}</span>
+          </div>
+        </details>
         <div className="brief-actions">
           <button className="command primary" type="button" onClick={saveAndOpenIssue}>
             <Send size={18} />
@@ -686,7 +1110,7 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
           <p className="kicker">Vault Entrance</p>
           <h1 id="vault-title">Hidden Hearts</h1>
           <p className="vault-copy">
-            Unlock the story prototype with Chapter 1 receipts. From here on, production follows the 2D story RPG path.
+            Unlock the Chapter 1 story prototype with Chapter 1 receipts. This build stays in Chapter 1; Chapters 2-6 come later.
           </p>
 
           <div className="vault-progress" aria-label="Dial progress">

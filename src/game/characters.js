@@ -1,4 +1,4 @@
-const TODO = "TODO: Fill from Leah's future Hidden Hearts character bible.";
+const TODO = "TODO: Fill from T-i's future Hidden Hearts character bible.";
 
 function createArc(overrides = {}) {
   return {

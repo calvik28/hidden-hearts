@@ -4,6 +4,8 @@
 
 Hidden Hearts RPG has pivoted away from further 3D expansion and toward a richer character-driven 2D story RPG. Production should now move forward from the 2D story prototype rather than the old 3D build.
 
+Current playable scope is Chapter 1 only. The game should stretch Chapter 1 across the current architecture as six Chapter 1 story parts. Chapters 2-6 should be added later, after the Chapter 1 foundation feels full.
+
 Image generation will be part of the future 2D story RPG asset pipeline, but visual and image-generation work is paused until further notice. Do not generate new images, call the OpenAI API, or continue any visual asset pipeline unless that work is explicitly restarted.
 
 ## Why Pivot Away From 3D
@@ -33,14 +35,14 @@ It should not be designed as a real-time 3D action game.
 The player should move through a clear story loop:
 
 1. Enter through the vault.
-2. Unlock chapters.
+2. Unlock Chapter 1.
 3. Read atmospheric story scenes.
 4. Interact with characters.
 5. Inspect clues and story objects.
 6. Make light choices.
-7. Progress through chapter scenes.
-8. Reach emotional chapter climaxes.
-9. Unlock the next chapter.
+7. Progress through Chapter 1 story parts.
+8. Reach the Chapter 1 emotional close.
+9. Leave clear space for Chapters 2-6 later.
 
 The game should feel like opening a hidden story file, stepping into a chapter, and carrying the characters through choices that matter emotionally even when the mechanics stay light.
 
@@ -50,10 +52,10 @@ Preserve these pieces from the current game:
 
 - Vault entrance
 - Chapter 1 quiz unlock
-- Chapter progression
+- Chapter 1 part progression
 - `localStorage` persistence
 - AO3 linkout
-- Chapter 6 Coming Soon finale
+- Later expansion space for Chapters 2-6
 - Generated asset pipeline for later possible use, including a future 2D image pipeline
 - Existing generated assets
 - Chapter data structure where useful
@@ -88,7 +90,20 @@ The future 2D story RPG can be built around:
 
 Conflict should become more story-shaped than reflex-shaped. A confrontation can be a dialogue exchange, a scripted decision sequence, a clue check, a trust moment, or a small turn-based scene if the chapter calls for it.
 
-## Suggested Chapter Structure
+## Current Chapter 1 Structure
+
+For now, the playable architecture should be filled with Chapter 1 parts:
+
+1. Restaurant Crisis
+2. Healed But Hiding
+3. Roommate Dinner
+4. Ordinary Day
+5. Hero Shift
+6. Bar Night
+
+This keeps the game long enough to feel like the current architecture while avoiding premature Chapter 2-6 content.
+
+## Future Chapter Structure
 
 Each chapter should be able to follow this structure:
 
