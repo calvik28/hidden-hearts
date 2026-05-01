@@ -273,7 +273,6 @@ function shuffleVaultOptions(question) {
 
 function createVaultOptionOrder() {
   return vaultQuestions.map((question) => ({
-    dial: question.dial,
     options: shuffleVaultOptions(question),
   }));
 }
@@ -1056,7 +1055,6 @@ function StoryBackdrop() {
 function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
   const [step, setStep] = useState(0);
   const [reinforced, setReinforced] = useState(false);
-  const [answered, setAnswered] = useState([]);
   const [optionOrder, setOptionOrder] = useState(createVaultOptionOrder);
   const current = vaultQuestions[step];
   const currentOptions = optionOrder[step]?.options ?? current.options;
@@ -1068,8 +1066,6 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
       setReinforced(true);
       return;
     }
-    const nextAnswered = [...answered, current.dial];
-    setAnswered(nextAnswered);
     if (step === vaultQuestions.length - 1) {
       window.setTimeout(onUnlock, 620);
       return;
@@ -1079,7 +1075,6 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
 
   const retry = () => {
     setStep(0);
-    setAnswered([]);
     setReinforced(false);
     setOptionOrder(createVaultOptionOrder());
   };
@@ -1112,17 +1107,6 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
           <p className="vault-copy">
             Unlock the Chapter 1 story prototype with Chapter 1 receipts. This build stays in Chapter 1; Chapters 2-6 come later.
           </p>
-
-          <div className="vault-progress" aria-label="Dial progress">
-            {vaultQuestions.map((question, index) => (
-              <span
-                key={question.dial}
-                className={answered.includes(question.dial) ? "lit" : index === step ? "current" : ""}
-              >
-                {question.dial}
-              </span>
-            ))}
-          </div>
 
           {!reinforced ? (
             <div className="vault-question">

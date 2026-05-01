@@ -178,18 +178,15 @@ export const vaultQuestions = [
     prompt: "Which two villains wreck Grian and Jimmy's restaurant night?",
     options: ["Tekbox and Ethical", "Moonlight and Cyclone", "Tithonus and Lucid"],
     answer: "Tekbox and Ethical",
-    dial: "EMBER",
   },
   {
     prompt: "Who patches Grian up after Tekbox burns him?",
     options: ["Gem", "Pearl", "Scar"],
     answer: "Gem",
-    dial: "HEAL",
   },
   {
     prompt: "What does Grian cook for Scar, somehow forgetting the most important part?",
     options: ["Pasta", "Tomato soup", "Ramen noodles"],
     answer: "Pasta",
-    dial: "SAUCE",
   },
 ];
