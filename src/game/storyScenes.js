@@ -95,7 +95,7 @@ export const chapterOneStory = {
           id: "villain-voices",
           label: "Villain voices",
           text:
-            "Tekbox and Ethical's voices cut through the smoke in fragments. Grian files the sound away because later, with the mask on, knowing a voice might matter.",
+            "Tekbox and Ethical's voices cut through the smoke in fragments. Grian files the sound away because knowing a voice might matter if he gets a safer chance to act.",
           setsFlag: "inspected_villain_voices",
         },
       ],
@@ -134,9 +134,9 @@ export const chapterOneStory = {
       participants: ["grian", "jimmy", "tekbox", "ethical"],
       title: "Under The Table",
       narration:
-        "The robbery stretches. Grian has to stay low, keep Jimmy from doing something heroic, and remember every detail that might matter once the mask can come back on.",
+        "The robbery stretches. Grian has to stay low, keep Jimmy from doing something heroic, and remember every detail without making the villains look his way.",
       focus:
-        "This beat slows the restaurant scene so the player feels the trapped civilian version of Grian before the aftermath.",
+        "The trapped civilian version of Grian has to sit with what he cannot do yet.",
       choices: [
         {
           id: "keep-jimmy-still",
@@ -156,7 +156,7 @@ export const chapterOneStory = {
           id: "listen-for-names",
           label: "Listen for names",
           result:
-            "Tekbox and Ethical say enough for Grian to file the voices away. Later, Astraeus will know what Grian pretended not to hear.",
+            "Tekbox and Ethical say enough for Grian to file the voices away. He keeps his face blank and lets the information settle.",
           stats: { secrecy: 2 },
         },
       ],
@@ -171,7 +171,7 @@ export const chapterOneStory = {
       narration:
         "The restaurant is behind them, but Grian still smells smoke. Everyone got out with minor wounds, and that should be enough. It does not feel like enough.",
       focus:
-        "This small beat gives the player time to sit with the aftermath before the scene becomes banter again.",
+        "The aftermath lingers before anyone can make the room easy again.",
       callbacks: [
         {
           flag: "restaurant_guided_civilians",
@@ -322,7 +322,7 @@ export const chapterOneStory = {
       narration:
         "Gem and Jimmy leave, and the apartment settles. Grian has time to notice the ache in his leg, the quiet around him, and the fact that Scar will be home soon.",
       focus:
-        "The chapter needs little domestic pauses so Scar feels like part of Grian's daily life, not just the romance destination.",
+        "The apartment gives Grian a quieter kind of pressure: make the room look normal before Scar steps into it.",
       choices: [
         {
           id: "make-pasta",
@@ -482,7 +482,7 @@ export const chapterOneStory = {
       narration:
         "Grian's life splits into patterns: hospital shifts, hero patrols, friends who know, friends who do not, and wings he keeps hidden in public.",
       focus:
-        "This is the prototype's first codex-style pause. The game should teach character truth through memory, not a combat tutorial.",
+        "This memory sits between the hospital life and the hero life, close enough that both versions of Grian feel true.",
       choices: [
         {
           id: "remember-purpose",
@@ -502,7 +502,7 @@ export const chapterOneStory = {
           id: "review-villains",
           label: "Review the threat list",
           result:
-            "Ethical, Tithonus, and Lucid are not background danger. They are why the hero committee had to become real.",
+            "The threat list is not background noise. It is why the hero committee had to become real.",
           stats: { courage: 2 },
         },
       ],
@@ -552,7 +552,7 @@ export const chapterOneStory = {
       narration:
         "At the hospital, Grian meets Mumbo in the locker room. They trade tired greetings, shift complaints, and the familiar weird comfort of ER work.",
       focus:
-        "Mumbo needs space in Chapter 1 because his friendship becomes a major secret-identity pressure later.",
+        "Mumbo belongs to the normal workday, which makes Grian's hidden life feel even harder to carry.",
       choices: [
         {
           id: "joke-with-mumbo",
@@ -587,7 +587,7 @@ export const chapterOneStory = {
       narration:
         "Grian gets home exhausted, ready for a movie and food. Then the alert hits: villain activity in central city. He has just finished one job, and the other is already calling.",
       focus:
-        "This beat is the hinge between nurse-Grian and Astraeus. The player should feel how little rest he gets.",
+        "The quiet evening breaks before Grian has recovered from the hospital shift.",
       choices: [
         {
           id: "call-jimmy",
@@ -622,7 +622,7 @@ export const chapterOneStory = {
       narration:
         "The alert cuts through Grian's exhaustion. Astraeus joins Acanthus, Dawnstar, Aceso, and Phera as the villains press toward a city cable.",
       focus:
-        "The chapter's action should read like coordinated stress, not a reflex test. The meaningful question is what Grian protects first.",
+        "The street fight turns into coordinated stress, and Grian has to decide what to protect first.",
       choices: [
         {
           id: "cover-phera",
@@ -698,7 +698,7 @@ export const chapterOneStory = {
           id: "sit-near-scar",
           label: "Sit near Scar",
           result:
-            "Grian tells himself it is just where the seats worked out. The game records that as a lie with excellent posture.",
+            "Grian tells himself it is just where the seats worked out. The thought does not survive the warmth of Scar beside him.",
           stats: { tenderness: 2, secrecy: 1 },
         },
         {
@@ -727,7 +727,7 @@ export const chapterOneStory = {
       narration:
         "The game keeps going. Grian keeps losing. The table gets louder around him, and the line between normal night and too-much night starts getting blurry.",
       focus:
-        "This gives the bar scene another step before the walk home so the ending earns its softness.",
+        "The night has enough room for laughter before the cold walk home.",
       choices: [
         {
           id: "laugh-at-himself",
@@ -762,7 +762,7 @@ export const chapterOneStory = {
       narration:
         "Grian and Scar leave the bar together. The apartment is not far, but Grian is cold, tired, and drunk enough to ask for what he wants without meaning to be honest.",
       focus:
-        "Chapter 1 should close with ordinary intimacy. Scar feels like home before the story has language for what that means.",
+        "The chapter closes in the smallest possible way: two people walking home, one of them too tired to pretend well.",
       callbacks: [
         {
           flag: "scar_saw_dinner_effort",
@@ -802,7 +802,7 @@ export const chapterOneStory = {
           id: "notice-the-feeling",
           label: "Notice the feeling",
           result:
-            "Grian does not say anything, but the game records what the chapter already knows: Scar feels like home.",
+            "Grian does not say anything. He just notices how easy it is to lean toward Scar and how hard it is to name that.",
           stats: { tenderness: 2, trust: 1 },
         },
       ],

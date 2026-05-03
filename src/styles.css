@@ -425,6 +425,55 @@ button:disabled {
   border-top: 3px solid rgba(255, 247, 214, 0.18);
 }
 
+.player-brief,
+.path-panel {
+  margin: 14px 0 0;
+  border: 4px solid var(--line);
+  padding: 12px;
+  background:
+    linear-gradient(90deg, rgba(98, 217, 255, 0.1), transparent),
+    rgba(0, 0, 0, 0.22);
+}
+
+.player-brief {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.player-token {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 3px solid var(--line);
+  color: #14100a;
+  background:
+    linear-gradient(180deg, #62d9ff 0 50%, #45a8c9 50%),
+    #62d9ff;
+}
+
+.player-brief span,
+.path-header span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.player-brief strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--paper);
+  font-size: 18px;
+}
+
+.player-brief p {
+  margin: 5px 0 0;
+  font-size: 13px;
+}
+
 .part-summary span,
 .part-summary strong {
   display: block;
@@ -446,6 +495,64 @@ button:disabled {
 .part-summary p {
   margin: 6px 0 0;
   font-size: 13px;
+}
+
+.path-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.path-header strong {
+  color: var(--diamond);
+  font-size: 13px;
+}
+
+.path-list {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-step {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 8px;
+  align-items: center;
+  border: 3px solid rgba(23, 18, 25, 0.78);
+  padding: 7px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.path-step span {
+  color: rgba(255, 247, 214, 0.72);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.path-step strong {
+  color: rgba(255, 247, 214, 0.78);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.path-step.active {
+  border-color: var(--line);
+  background:
+    linear-gradient(90deg, rgba(94, 227, 125, 0.14), transparent),
+    rgba(0, 0, 0, 0.24);
+}
+
+.path-step.active strong {
+  color: var(--emerald);
+}
+
+.path-step.complete strong {
+  color: var(--diamond);
 }
 
 .story-progress {
@@ -776,6 +883,18 @@ button:disabled {
 
 .cast-entry h3 {
   font-size: 17px;
+}
+
+.cast-role {
+  display: inline-block;
+  margin-top: 3px;
+  border: 2px solid rgba(246, 200, 95, 0.45);
+  padding: 2px 5px;
+  color: var(--gold);
+  background: rgba(246, 200, 95, 0.08);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .cast-entry p {

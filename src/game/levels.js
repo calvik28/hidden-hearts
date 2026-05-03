@@ -176,7 +176,7 @@ export const finale = {
 export const vaultQuestions = [
   {
     prompt: "Which two villains wreck Grian and Jimmy's restaurant night?",
-    options: ["Tekbox and Ethical", "Moonlight and Cyclone", "Tithonus and Lucid"],
+    options: ["Tekbox and Ethical", "Two unnamed thieves", "A different villain pair"],
     answer: "Tekbox and Ethical",
   },
   {

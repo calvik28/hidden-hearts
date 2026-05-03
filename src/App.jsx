@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  BookOpen,
-  Check,
-  ChevronRight,
-  Home,
-  Lock,
-  LockKeyhole,
-  MessageCircle,
-  RotateCcw,
-  Search,
-  Send,
-  Shield,
-  Sparkles,
-  Star,
-  UserRound,
-} from "lucide-react";
+import BookOpen from "lucide-react/dist/esm/icons/book-open.js";
+import Check from "lucide-react/dist/esm/icons/check.js";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
+import Home from "lucide-react/dist/esm/icons/house.js";
+import Lock from "lucide-react/dist/esm/icons/lock.js";
+import LockKeyhole from "lucide-react/dist/esm/icons/lock-keyhole.js";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle.js";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw.js";
+import Search from "lucide-react/dist/esm/icons/search.js";
+import Send from "lucide-react/dist/esm/icons/send.js";
+import Shield from "lucide-react/dist/esm/icons/shield.js";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
+import Star from "lucide-react/dist/esm/icons/star.js";
+import UserRound from "lucide-react/dist/esm/icons/user-round.js";
 import { getCharacterById } from "./game/characters.js";
 import { generatedAssets } from "./game/generatedAssets.js";
 import { ao3Links, vaultQuestions } from "./game/levels.js";
@@ -62,33 +60,60 @@ const STAT_PAIR_COPY = {
 };
 const STAT_PAIR_ORDER = ["trust", "courage", "secrecy", "tenderness"];
 const CAST_NOTE_FALLBACKS = {
-  grian: "Current lens: carrying the emotional choice through this beat.",
-  scar: "Current pressure: home, care, and what Grian lets him see.",
-  jimmy: "Current pressure: friend-shaped banter under real concern.",
-  gem: "Current pressure: care, healing, and the cost of needing help.",
-  pearl: "Current pressure: team steadiness around the chapter's danger.",
-  lizzie: "Current pressure: friend-group warmth around the hero life.",
-  mumbo: "Current pressure: hospital normalcy and future secret-identity strain.",
-  tekbox: "Current pressure: named danger from the chapter's villain side.",
-  ethical: "Current pressure: named danger from the chapter's villain side.",
-  tithonus: "Current pressure: part of the wider villain threat.",
+  grian: "You choose how Grian carries this beat.",
+  scar: "Home life enters the scene through Scar.",
+  jimmy: "Jimmy keeps the moment close to friendship and alarm.",
+  gem: "Gem brings care, healing, and direct concern into the room.",
+  pearl: "Pearl steadies the team side of the chapter.",
+  lizzie: "Lizzie keeps the group practical and present.",
+  mumbo: "Mumbo belongs to Grian's hospital day.",
+  tekbox: "Tekbox is one of the named restaurant threats.",
+  ethical: "Ethical is one of the named restaurant threats.",
+  tithonus: "Tithonus is part of the active street danger.",
+};
+const CAST_ROLE_FALLBACKS = {
+  grian: "Player character",
+  scar: "Roommate",
+  jimmy: "Friend",
+  gem: "Friend and healer",
+  pearl: "Hero teammate",
+  lizzie: "Hero teammate",
+  mumbo: "Hospital coworker",
+  tekbox: "Villain",
+  ethical: "Villain",
+  tithonus: "Villain",
 };
 const SCENE_CAST_NOTES = {
   "restaurant-smoke": {
-    grian: "Thinking like Astraeus while staying visibly civilian.",
+    grian: "Thinking like a hero while staying visibly civilian.",
     jimmy: "Caught beside Grian as the restaurant turns dangerous.",
     tekbox: "One of the named threats forcing the crisis.",
     ethical: "One of the named threats forcing the crisis.",
+  },
+  "under-the-table": {
+    grian: "Keeping low, counting exits, and trying not to reveal too much.",
+    jimmy: "Close enough for Grian to steady without making a scene.",
+    tekbox: "A voice and threat Grian has to track from hiding.",
+    ethical: "A second pressure in the room while everyone stays down.",
   },
   "smoke-still-there": {
     grian: "Still carrying the restaurant smoke after everyone gets out.",
     jimmy: "Safe now, but still close enough for Grian to check on.",
     gem: "Healing the injury while watching what Grian tries to minimize.",
   },
+  "apartment-healing": {
+    grian: "Hurt, embarrassed, and trying to stay easy to joke with.",
+    jimmy: "Hovering because the joke stopped being funny at the restaurant.",
+    gem: "Doing the healing and noticing what it costs.",
+  },
   "before-they-go": {
     grian: "Helped by friends, already preparing to hide the proof.",
     jimmy: "Hovering with affection tucked under familiar teasing.",
     gem: "Watching the healed wound and the guilt around it.",
+  },
+  "waiting-for-scar": {
+    grian: "Alone with the apartment, the ache, and the dinner plan.",
+    scar: "Not home yet, but already shaping what Grian prepares for.",
   },
   "key-in-door": {
     grian: "Choosing what version of the night Scar gets to enter.",
@@ -97,6 +122,74 @@ const SCENE_CAST_NOTES = {
   "pasta-dinner": {
     grian: "Letting a small dinner carry more feeling than he says.",
     scar: "Turning plain pasta into home by being there.",
+  },
+  "night-thoughts": {
+    grian: "Sorting the people he cares about from behind a closed door.",
+    scar: "Part of the feeling Grian is not ready to say cleanly.",
+    mumbo: "Part of Grian's ordinary life outside the apartment.",
+    jimmy: "One of the old bonds tied to Grian's hidden life.",
+    gem: "A friend whose care still lingers after the injury.",
+    pearl: "Part of the wider friend circle in Grian's thoughts.",
+    lizzie: "Part of the wider friend circle in Grian's thoughts.",
+  },
+  "hero-context": {
+    grian: "Remembering why the hidden work started.",
+    jimmy: "One of the friends tied to that hidden work.",
+    gem: "One of the friends who keeps the team standing.",
+    pearl: "A steady presence in the hero circle.",
+    lizzie: "A practical presence in the hero circle.",
+    mumbo: "A hospital friend in the life Grian keeps separate.",
+    scar: "A home friend in the life Grian keeps separate.",
+  },
+  "morning-group-chat": {
+    grian: "Trying to let the morning be normal before work.",
+    scar: "Present through small care before the day starts.",
+    jimmy: "Part of the group plan waiting after work.",
+    gem: "Part of the group plan waiting after work.",
+    pearl: "Part of the group plan waiting after work.",
+    lizzie: "Part of the group plan waiting after work.",
+  },
+  "hospital-locker-room": {
+    grian: "Switching into the workday version of himself.",
+    mumbo: "Making the hospital day feel less heavy.",
+  },
+  "post-shift-alert": {
+    grian: "Exhausted, home, and being pulled toward danger again.",
+    scar: "Part of the quiet evening Grian has to leave behind.",
+    jimmy: "The first call when the alert feels wrong.",
+  },
+  "city-patrol": {
+    grian: "Back in the mask and watching what the team needs first.",
+    jimmy: "Fighting beside Grian as Acanthus.",
+    gem: "Keeping the team alive as Aceso.",
+    pearl: "Helping hold the line as Dawnstar.",
+    lizzie: "Helping hold the line as Phera.",
+    tekbox: "A returning threat from the restaurant crisis.",
+    ethical: "A returning threat from the restaurant crisis.",
+    tithonus: "Another threat in the street fight.",
+  },
+  "after-patrol": {
+    grian: "Choosing restraint after the danger breaks.",
+    gem: "Aceso healing before anyone can pretend the fight was clean.",
+    pearl: "Dawnstar calling the team back from chasing too far.",
+    lizzie: "Part of the team regrouping after the retreat.",
+    jimmy: "Acanthus regrouping after the retreat.",
+  },
+  "bar-table": {
+    grian: "Trying to be off duty at a table full of friends.",
+    scar: "Close enough for the night to feel warmer.",
+    jimmy: "Friend-table noise, teasing, and familiarity.",
+    gem: "Friend-table warmth after a long chapter day.",
+    pearl: "Friend-table warmth after a long chapter day.",
+    lizzie: "Friend-table warmth after a long chapter day.",
+  },
+  "one-more-round": {
+    grian: "Losing the game and letting the night blur softer.",
+    scar: "Staying steady beside Grian.",
+    jimmy: "Part of the laughter around the table.",
+    gem: "Part of the laughter around the table.",
+    pearl: "Part of the laughter around the table.",
+    lizzie: "Part of the laughter around the table.",
   },
   "walk-home": {
     grian: "Cold, tired, and closer to honesty than he means to be.",
@@ -348,6 +441,10 @@ function getSceneCastNote(scene, character) {
   );
 }
 
+function getSceneCastRole(character) {
+  return CAST_ROLE_FALLBACKS[character.id] ?? "Present";
+}
+
 function getSceneInspectables(scene) {
   return Array.isArray(scene.inspectables) ? scene.inspectables : [];
 }
@@ -531,7 +628,7 @@ export default function App() {
   const shareGame = async () => {
     const payload = {
       title: "Hidden Hearts RPG",
-      text: "I played the Hidden Hearts Chapter 1 story prototype.",
+      text: "I played the Hidden Hearts Chapter 1 story path.",
       url: window.location.href,
     };
     try {
@@ -564,7 +661,7 @@ export default function App() {
       <StoryBackdrop />
       <header className="story-topbar">
         <div>
-          <p className="kicker">Chapter 1 Prototype</p>
+          <p className="kicker">Chapter 1 Story Path</p>
           <h1>Hidden Hearts</h1>
         </div>
         <div className="topbar-actions">
@@ -574,7 +671,7 @@ export default function App() {
           <button className="icon-button" type="button" onClick={() => setFeedbackOpen(true)} aria-label="Send suggestion" title="Send suggestion">
             <MessageCircle size={19} />
           </button>
-          <button className="icon-button" type="button" onClick={shareGame} aria-label="Share prototype" title="Share prototype">
+          <button className="icon-button" type="button" onClick={shareGame} aria-label="Share story path" title="Share story path">
             <Send size={18} />
           </button>
         </div>
@@ -646,7 +743,8 @@ function StoryPrototype({
   const progressPercent =
     ((story.sceneIndex + (story.complete ? 1 : 0)) / chapterOneStory.scenes.length) * 100;
   const pointEvents = getPointEvents(pendingResult?.stats);
-  const currentPart = chapterOneStory.parts[getChapterOnePartIndex(story.sceneIndex)];
+  const currentPartIndex = getChapterOnePartIndex(story.sceneIndex);
+  const currentPart = chapterOneStory.parts[currentPartIndex];
   const sceneCallback = getSceneCallback(scene, story.flags);
   const inspectables = getSceneInspectables(scene);
 
@@ -656,6 +754,18 @@ function StoryPrototype({
         <p className="kicker">{chapterOneStory.chapter}</p>
         <h2>{chapterOneStory.title}</h2>
         <p>{chapterOneStory.logline}</p>
+        <div className="player-brief">
+          <div className="player-token" aria-hidden="true">
+            <UserRound size={22} />
+          </div>
+          <div>
+            <span>Playing As</span>
+            <strong>Grian</strong>
+            <p>
+              Choose how he gets through each Chapter 1 beat: protect people, accept care, keep secrets, or stay brave.
+            </p>
+          </div>
+        </div>
         {currentPart && (
           <div className="part-summary">
             <span>{currentPart.label}</span>
@@ -663,6 +773,25 @@ function StoryPrototype({
             <p>{currentPart.description}</p>
           </div>
         )}
+        <div className="path-panel" aria-label="Chapter 1 path">
+          <div className="path-header">
+            <span>Path</span>
+            <strong>
+              Scene {story.sceneIndex + 1} / {chapterOneStory.scenes.length}
+            </strong>
+          </div>
+          <ol className="path-list">
+            {chapterOneStory.parts.map((part, index) => (
+              <li
+                className={`path-step ${index === currentPartIndex ? "active" : ""} ${index < currentPartIndex || story.complete ? "complete" : ""}`}
+                key={part.id}
+              >
+                <span>{part.label}</span>
+                <strong>{index <= currentPartIndex || story.complete ? part.title : "Unopened part"}</strong>
+              </li>
+            ))}
+          </ol>
+        </div>
         <div className="story-progress" aria-label="Chapter progress">
           <span style={{ width: `${progressPercent}%` }} />
         </div>
@@ -692,6 +821,9 @@ function StoryPrototype({
             <div className="scene-meta">
               <span>{scene.location}</span>
               <span>{scene.time}</span>
+              <span>
+                Scene {story.sceneIndex + 1} / {chapterOneStory.scenes.length}
+              </span>
             </div>
             <p className="kicker">{scene.mood}</p>
             <h2 id="scene-title">{scene.title}</h2>
@@ -762,7 +894,7 @@ function StoryPrototype({
       </section>
 
       <aside className="story-card cast-card">
-        <p className="kicker">Scene Cast</p>
+        <p className="kicker">People Here</p>
         <div className="cast-list">
           {participants.map((character) => (
             <article className="cast-entry" key={character.id}>
@@ -771,15 +903,15 @@ function StoryPrototype({
               </div>
               <div>
                 <h3>{character.displayName}</h3>
+                <span className="cast-role">{getSceneCastRole(character)}</span>
                 <p className="cast-scene-note">{getSceneCastNote(scene, character)}</p>
-                <p>{character.shortDescription}</p>
               </div>
             </article>
           ))}
         </div>
         <div className="source-note">
           <Shield size={18} />
-          <p>Character depth is source-backed from the current AO3 chapters and marked TODO where motives are still unknown.</p>
+          <p>Chapter 1 lens: this panel only names what matters in the current beat.</p>
         </div>
       </aside>
     </div>
@@ -874,7 +1006,7 @@ function ChapterComplete({ completedChapter, onFeedback, onReset, story }) {
 
   return (
     <div className="complete-card">
-      <p className="kicker">{completedChapter ? "Chapter Replay Complete" : "Chapter Prototype Complete"}</p>
+      <p className="kicker">{completedChapter ? "Chapter Replay Complete" : "Chapter Path Complete"}</p>
       <h2>Chapter 1 Run Complete</h2>
       <p>
         This build stays inside Chapter 1 and stretches it across the current game structure: restaurant danger, recovery, home, work, patrol, and the bar night.
@@ -1105,7 +1237,7 @@ function VaultEntrance({ assetStyle, onUnlock, shareGame, shareStatus }) {
           <p className="kicker">Vault Entrance</p>
           <h1 id="vault-title">Hidden Hearts</h1>
           <p className="vault-copy">
-            Unlock the Chapter 1 story prototype with Chapter 1 receipts. This build stays in Chapter 1; Chapters 2-6 come later.
+            Unlock the Chapter 1 story path with Chapter 1 receipts. This build stays in Chapter 1; Chapters 2-6 come later.
           </p>
 
           {!reinforced ? (
